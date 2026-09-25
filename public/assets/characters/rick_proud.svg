@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="420" viewBox="0 0 260 420"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M20 420 C10 300 40 200 130 196 C220 200 250 300 240 420 Z" fill="#8fb3c9"/>
+ <path d="M60 230 L60 420 L200 420 L200 230 C170 250 90 250 60 230 Z" fill="#d9412f"/>
+ <path d="M60 230 L90 205 M200 230 L170 205" fill="none"/>
+ <path d="M236 280 C262 250 262 210 250 190" fill="none"/>
+ <rect x="236" y="120" width="16" height="80" rx="4" fill="#9aa3ab"/><rect x="226" y="96" width="36" height="34" rx="4" fill="#c7ccd1"/>
+ <circle cx="244" cy="200" r="16" fill="#f0b48a"/>
+ <ellipse cx="130" cy="120" rx="66" ry="72" fill="#f0b48a"/>
+ <path d="M60 92 C62 30 198 30 200 92 Z" fill="#d9412f"/><path d="M190 90 L250 104 L192 108 Z" fill="#d9412f"/>
+ <rect x="80" y="104" width="44" height="26" rx="10" fill="#2a1b12"/><rect x="136" y="104" width="44" height="26" rx="10" fill="#2a1b12"/><line x1="124" y1="114" x2="136" y2="114"/>
+ <path d="M80 98 C92 86 112 86 122 94 M138 94 C148 86 168 86 180 98" fill="none" stroke-width="5"/>
+ <path d="M88 110 L96 110 M92 106 L92 114 M150 110 L160 110 M155 105 L155 115" stroke="#fff" stroke-width="3"/>
+ <path d="M80 146 C96 132 120 142 130 150 C140 142 164 132 180 146 C184 138 188 136 192 140 C184 158 150 160 130 158 C110 160 76 158 68 140 C72 136 76 138 80 146 Z" fill="#6b3e22"/>
+ <path d="M100 162 C108 198 152 198 160 162 Z" fill="#8a3322"/><path d="M106 166 L154 166" stroke="#fff" stroke-width="6"/>
+</g>
+<text x="130" y="74" font-family="Arial Black, Impact, sans-serif" font-size="14" text-anchor="middle" fill="#fff">UNCLE RICK</text>
+<text x="130" y="300" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#fff">MEAT IS A</text>
+<text x="130" y="324" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#fff">VEGETABLE</text></svg>

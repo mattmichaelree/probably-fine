@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="420" viewBox="0 0 260 420"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M20 420 C10 300 40 200 130 196 C220 200 250 300 240 420 Z" fill="#8fb3c9"/>
+ <path d="M60 230 L60 420 L200 420 L200 230 C170 250 90 250 60 230 Z" fill="#d9412f"/>
+ <path d="M60 230 L90 205 M200 230 L170 205" fill="none"/>
+ <path d="M236 280 C262 250 262 210 250 190" fill="none"/>
+ <rect x="236" y="120" width="16" height="80" rx="4" fill="#9aa3ab"/><rect x="226" y="96" width="36" height="34" rx="4" fill="#c7ccd1"/>
+ <circle cx="244" cy="200" r="16" fill="#f0b48a"/>
+ <ellipse cx="130" cy="120" rx="66" ry="72" fill="#f0b48a"/>
+ <path d="M60 92 C62 30 198 30 200 92 Z" fill="#d9412f"/><path d="M190 90 L250 104 L192 108 Z" fill="#d9412f"/>
+ <rect x="80" y="104" width="44" height="26" rx="10" fill="#2a1b12"/><rect x="136" y="104" width="44" height="26" rx="10" fill="#2a1b12"/><line x1="124" y1="114" x2="136" y2="114"/>
+ <path d="M84 98 C96 95 110 95 120 98 M140 94 C150 86 166 86 176 94" fill="none" stroke-width="5"/>
+ <circle cx="116" cy="118" r="4" fill="#fff" stroke="none"/><circle cx="172" cy="118" r="4" fill="#fff" stroke="none"/>
+ <path d="M86 160 C100 140 120 150 130 158 C140 150 160 140 174 160 C160 176 140 168 130 164 C120 168 100 176 86 160 Z" fill="#6b3e22"/>
+ <path d="M104 174 C118 180 142 180 156 172 L154 184 C140 192 118 192 106 186 Z" fill="#fff" stroke-width="5"/>
+ <path d="M117 177 L117 189 M130 178 L130 190 M143 176 L143 188" fill="none" stroke-width="3"/>
+ <path d="M206 124 C200 136 200 142 206 144 C212 142 212 136 206 124 Z" fill="#8fd3ff" stroke-width="4"/>
+</g>
+<text x="130" y="74" font-family="Arial Black, Impact, sans-serif" font-size="14" text-anchor="middle" fill="#fff">UNCLE RICK</text>
+<text x="130" y="300" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#fff">MEAT IS A</text>
+<text x="130" y="324" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#fff">VEGETABLE</text></svg>

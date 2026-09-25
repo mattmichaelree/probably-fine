@@ -1,6 +1,7 @@
 import { startDay, type State } from '../systems/rules.ts';
 import { muted, setMuted } from '../sfx.ts';
-import { BaseScene, clearSave, loadSave, reduceMotion, setReduceMotion, TITLE, type Btn } from './BaseScene.ts';
+import { CLUES } from '../content/index.ts';
+import { BaseScene, clearSave, loadNotebook, loadSave, reduceMotion, setReduceMotion, TITLE, type Btn } from './BaseScene.ts';
 
 // The cover: title, a glowing biscuit, and the menu.
 export class TitleScene extends BaseScene {
@@ -31,9 +32,12 @@ export class TitleScene extends BaseScene {
       { label: 'NEW GAME', fill: 0x3f9a5b, onClick: () => { clearSave(); this.scene.start('test', { seed: Math.floor(Math.random() * 1e6) }); } },
       { label: 'CONTINUE', fill: 0x4f9bd1, enabled: !!this.save, onClick: () => this.save && this.scene.start(this.save.scene, { run: this.save }) },
       { label: 'HOW TO PLAY', fill: 0x8a6fc0, onClick: () => this.howTo() },
+      { label: 'NOTEBOOK', fill: 0xc9892f, onClick: () => this.notebook() },
       { label: 'SETTINGS', fill: 0x7a8791, onClick: () => this.settings() },
     ];
-    btns.forEach((b, i) => this.U(this.button(430, 410 + i * 80, 300, 72, b)));
+    // Three full-width rows, then Notebook and Settings side by side: every button stays phone-tappable.
+    btns.slice(0, 3).forEach((b, i) => this.U(this.button(430, 410 + i * 80, 300, 72, b)));
+    btns.slice(3).forEach((b, i) => this.U(this.button(355 + i * 150, 650, 146, 72, b)));
     this.U(this.txt(1268, 712, 'Stand-in art · Phaser 4 · made with Claude Code', 13, { color: '#c7ccd1' }).setOrigin(1, 1));
   }
 
@@ -43,7 +47,18 @@ export class TitleScene extends BaseScene {
       { mark: '?', text: 'Badges show what you KNOW: ✓ safe, ! risky, ? unknown. Every choice previews what it could cost.' },
       { mark: '!', text: '"RISK IT" means exactly that. No pill makes a peanut safe.' },
       { mark: '✓', text: 'Telling people early helps. They take it better than you think.' },
+      { mark: '!', text: 'Money, condition and goodwill carry forward. Past the white line on Condition, the day follows you to dinner.' },
     ], null, []);
+  }
+
+  // Discoveries survive between Saturdays; the Saturday itself starts fresh.
+  private notebook() {
+    const seen = loadNotebook();
+    const clues = seen.filter((k) => CLUES[k]);
+    const statuses = seen.filter((k) => k.startsWith('status_')).map((k) => `${k.slice(7)[0].toUpperCase()}${k.slice(8)} intolerance (confirmed)`);
+    const recent = clues.slice(-6).reverse().map((k) => ({ mark: '✓' as const, text: CLUES[k].recap }));
+    this.openCard(1000, 'Notebook', `${clues.length} of ${Object.keys(CLUES).length} discoveries so far.${statuses.length ? ` ${statuses.join('. ')}.` : ''} Each Saturday starts fresh; your notes don't.`,
+      recent.length ? recent : [{ mark: '?', text: 'Nothing yet. Read a label. Watch a brush. Ask a server.' }], null, []);
   }
 
   private settings() {

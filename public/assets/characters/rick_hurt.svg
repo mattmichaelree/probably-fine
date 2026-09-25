@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="420" viewBox="0 0 260 420"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M20 420 C10 300 40 200 130 196 C220 200 250 300 240 420 Z" fill="#8fb3c9"/>
+ <path d="M60 230 L60 420 L200 420 L200 230 C170 250 90 250 60 230 Z" fill="#d9412f"/>
+ <path d="M60 230 L90 205 M200 230 L170 205" fill="none"/>
+ <path d="M236 280 C262 250 262 210 250 190" fill="none"/>
+ <rect x="236" y="120" width="16" height="80" rx="4" fill="#9aa3ab"/><rect x="226" y="96" width="36" height="34" rx="4" fill="#c7ccd1"/>
+ <circle cx="244" cy="200" r="16" fill="#f0b48a"/>
+ <ellipse cx="130" cy="120" rx="66" ry="72" fill="#f0b48a"/>
+ <path d="M60 92 C62 30 198 30 200 92 Z" fill="#d9412f"/><path d="M190 90 L250 104 L192 108 Z" fill="#d9412f"/>
+ <rect x="80" y="104" width="44" height="26" rx="10" fill="#2a1b12"/><rect x="136" y="104" width="44" height="26" rx="10" fill="#2a1b12"/><line x1="124" y1="114" x2="136" y2="114"/>
+ <path d="M82 102 C96 102 110 98 120 90 M140 90 C150 98 164 102 178 102" fill="none" stroke-width="5"/>
+ <circle cx="102" cy="124" r="4" fill="#fff" stroke="none"/><circle cx="158" cy="124" r="4" fill="#fff" stroke="none"/>
+ <path d="M90 150 C104 142 120 148 130 154 C140 148 156 142 170 150 C176 160 176 168 170 174 C160 166 142 162 130 162 C118 162 100 166 90 174 C84 168 84 160 90 150 Z" fill="#6b3e22"/>
+ <path d="M110 188 C114 180 120 184 125 179 C130 183 135 179 140 183 C145 180 148 184 150 188" fill="none" stroke-width="5"/>
+ <path d="M94 134 C88 146 88 152 94 154 C100 152 100 146 94 134 Z" fill="#8fd3ff" stroke-width="4"/>
+</g>
+<text x="130" y="74" font-family="Arial Black, Impact, sans-serif" font-size="14" text-anchor="middle" fill="#fff">UNCLE RICK</text>
+<text x="130" y="300" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#fff">MEAT IS A</text>
+<text x="130" y="324" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#fff">VEGETABLE</text></svg>

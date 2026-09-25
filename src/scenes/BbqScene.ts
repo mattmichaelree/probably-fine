@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { CLUES, FOODS, RICK, RICK_SAUCE } from '../content/index.ts';
 import {
-  askRub, askSauce, canEat, declineRibs, eat, inspect, isRisky, leaveBbq, negotiateCat, newRun, orderBurger, pillsActive, sit, tellRick, toBbq, toDate,
+  askRub, askSauce, canEat, declineRibs, eat, inspect, isRisky, leaveBbq, negotiateCat, newRun, orderBurger, pillsActive, sit, tellRick, toBbq, toDate, toPizza,
   type State,
 } from '../systems/rules.ts';
 import { BaseScene, clock, dur, reduceMotion, type Btn } from './BaseScene.ts';
@@ -54,9 +54,11 @@ export class BbqScene extends BaseScene {
       this.idleBrush();
       this.tweens.add({ targets: this.npc, angle: 2.5, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
     }
+    this.npcBase = 'rick';
     this.finishSetup();
     this.updateRickTag();
-    this.time.delayedCall(500, () => this.say('npc', RICK.greet, 3800));
+    this.toast("Goal: eat something, keep Rick happy, and get out in one piece. Dinner with Sam is at 7:00.");
+    this.time.delayedCall(500, () => { this.say('npc', RICK.greet, 3800); this.mood('rick_proud', 2400); });
     this.time.delayedCall(9000, () => {
       if (!this.s.outcome && !this.s.eaten.includes('ribs') && !this.s.known.includes('declined_ribs') && !this.card && !this.zoomed) this.say('npc', RICK.push, 3200);
     });
@@ -93,6 +95,11 @@ export class BbqScene extends BaseScene {
   protected onCommit(prev: State, next: State) {
     const learned = (id: string) => next.known.includes(id) && !prev.known.includes(id);
     this.updateRickTag();
+    // Rick wears his feelings on his face: panicked, sheepish, hurt, proud.
+    if (next.outcome === 'reaction') this.mood('rick_panicked', 9000);
+    else if (learned('brush_watched') || learned('sauce_label') || learned('rick_sauce_3')) this.mood('rick_sheepish', 3000);
+    else if (next.rel.rick < prev.rel.rick) this.mood('rick_hurt', 3000);
+    else if (next.rel.rick > prev.rel.rick || next.eaten.length > prev.eaten.length) this.mood('rick_proud', 2600);
     // Eaten dishes fade (the grill stays; it's shared by ribs and brisket).
     for (const id of next.eaten) if (!prev.eaten.includes(id) && id !== 'ribs' && id !== 'brisket') this.props[id]?.setAlpha(0.4);
     if (learned('rick_sauce_3') || learned('sauce_label')) this.stick('ribs');
@@ -209,8 +216,10 @@ export class BbqScene extends BaseScene {
 
   private decline() {
     this.closeCard();
+    const told = this.s.known.includes('told_rick');
     this.commit(declineRibs(this.s));
-    this.say('npc', CLUES.declined_ribs.line, 3000);
+    this.say('npc', told ? RICK.declinedTold : CLUES.declined_ribs.line, 3000);
+    if (!told) this.time.delayedCall(3200, () => { this.setFace('suspicious'); this.say('player', 'He looks crushed.\nI could tell him why.', 2600); });
   }
 
   private doEat(id: string) {
@@ -235,7 +244,8 @@ export class BbqScene extends BaseScene {
         const sauceKnown = this.s.known.includes('rick_sauce_3') || this.s.known.includes('sauce_label');
         this.commit(tellRick(this.s));
         this.say('npc', CLUES.told_rick.line, 3600);
-        if (sauceKnown) this.time.delayedCall(3700, () => this.say('npc', RICK.toldAfterSauce, 3600));
+        if (sauceKnown) this.time.delayedCall(3700, () => { this.say('npc', RICK.toldAfterSauce, 3600); this.mood('rick_sheepish', 3600); });
+        else if (this.s.known.includes('declined_ribs')) this.time.delayedCall(3700, () => this.say('npc', RICK.explained, 3200));
       },
     });
     const nextSauce = RICK_SAUCE.find((c) => !s.known.includes(c));
@@ -285,7 +295,7 @@ export class BbqScene extends BaseScene {
         this.say('player', covered ? 'Shade. No sneezing.\nThe pills are working.' : 'ACHOO.', 1400);
         this.time.delayedCall(1300, () => { this.setFace('neutral'); this.say('npc', RICK.cedar, 2600); });
       },
-    }], next !== s ? this.actionStats(next) : undefined);
+    }], next !== s ? this.actionChips(next) : undefined);
   }
 
   private catCard() {
@@ -312,7 +322,7 @@ export class BbqScene extends BaseScene {
             this.say('npc', RICK.catNo, 2400);
           }
         },
-      }], next !== s ? this.actionStats(next) : undefined);
+      }], next !== s ? this.actionChips(next) : undefined);
   }
 
   private gateCard() {
@@ -338,7 +348,9 @@ export class BbqScene extends BaseScene {
     const s = this.s;
     return [
       { label: "REPLAY RICK'S", fill: 0x7a8791, onClick: () => this.scene.restart({ run: this.entry }) },
-      { label: 'CONTINUE:\nTHE DATE', fill: 0x3f9a5b, onClick: () => this.scene.start('date', { run: toDate(s) }) },
+      // Sam texted: pasta place or pizza? The Trattoria is pricier; Slice Society is cheap, and trickier.
+      { label: 'DATE AT THE\nTRATTORIA ($12+)', fill: 0x3f9a5b, onClick: () => this.scene.start('date', { run: toDate(s) }) },
+      { label: 'DATE AT\nSLICE SOCIETY ($4+)', fill: 0xd9412f, onClick: () => this.scene.start('pizza', { run: toPizza(s) }) },
     ];
   }
 }

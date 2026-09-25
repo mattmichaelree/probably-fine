@@ -29,6 +29,10 @@ For each new art/audio asset, record: filename, creator/source, license or permi
 | `items/`: date_table, candle, specials_board, taco_truck | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Date |
 | `items/`: pastry_board | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Biscuit |
 | `locations/`: office_bg, store_bg, checkout, pharmacy_bg, truck_bg, backyard_bg, cedar_tree, restaurant_bg, biscuit_bg, night_bg | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | One per scene; biscuit_bg also Title, night_bg End of Day |
+| `characters/`: rick_proud, rick_hurt, rick_panicked, rick_sheepish, sam_happy, sam_annoyed, sam_worried (mood swaps of rick/sam) | Claude Code subagent, hand-written SVG | Original, project-owned | 2026-09-25 | BBQ, Date, Pizza (NPC reactions) |
+| `characters/`: server_careful, server_friendly, server_busy, server_dismissive | Claude Code subagent, hand-written SVG | Original, project-owned | 2026-09-25 | Date and Pizza (one server per venue per run) |
+| `locations/`: pizza_bg | Claude Code subagent, hand-written SVG | Original, project-owned | 2026-09-25 | Pizza (Slice Society) |
+| `items/`: pizza_menu, pizza_cutter, pesto_tub · `food/`: pizza_slices, garlic_knots, custom_pie | Claude Code subagent, hand-written SVG | Original, project-owned | 2026-09-25 | Pizza |
 | Sound effects (`src/sfx.ts`) | Synthesized at runtime with WebAudio oscillators | Original, no audio files | 2026-09-25 | Taps, stomach/reaction, endings |
 | Fonts: Luckiest Guy, Fredoka | Google Fonts | SIL OFL 1.1 | 2026-09-25 | All UI text |
 

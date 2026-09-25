@@ -4,6 +4,7 @@ import {
   askSauce, buyLactase, chatTodd, declineRibs, eat, endingCopy, factLines, inspect, leave, leaveBbq, negotiateCat, newRun, orderBurger,
   preview, probablyFines, sit, tellRick, toBbq, worstMark, toPharmacy, toDate, buyItem, pillsActive, tellSam, askServer,
   lookTorte, moveVenue, passTorte, leaveDate, toBiscuit, askJo, daySummary, extendedPanel, toTruck, lookFryer, parseSave, serializeSave, startDay,
+  explainSam, samCovers, canAskSamToCover, samKnows, toPizza, freshCutter, lookCutter, CONDITION_DANGER, type State,
 } from '../src/systems/rules.ts';
 
 // First seed where the cookie batch is (or isn't) contaminated.
@@ -309,7 +310,8 @@ test('antacid halves bathroom time, once per use', () => {
 
 // ---------- The Date ----------
 
-const atDate = (s = newRun(1)) => toDate(toBbq(s));
+// Tyler, the friendly server, behaves like the original single server: guess first, then a real check.
+const atDate = (s = newRun(1)): State => ({ ...toDate(toBbq(s)), server: 'friendly' });
 
 test('allergy card: the server checks quickly and reliably', () => {
   const s = atDate(toPharmacy(buyItem(toPharmacy(newRun(1)), 'card')));
@@ -351,7 +353,9 @@ test('moving venue and passing on the torte: explanation changes how Sam takes i
 });
 
 test('date endings', () => {
-  assert.equal(leaveDate({ ...atDate(), hunger: 3, rel: { rick: 6, sam: 8 } }).outcome, 'honest_win');
+  assert.equal(leaveDate({ ...atDate(), hunger: 3, rel: { rick: 6, sam: 8 }, trust: 6 }).outcome, 'honest_win');
+  assert.equal(leaveDate({ ...atDate(), hunger: 3, rel: { rick: 6, sam: 8 } }).outcome, 'charmed_unsure');
+  assert.equal(leaveDate({ ...atDate(), hunger: 3, patience: 2 }).outcome, 'impatient');
   assert.equal(leaveDate({ ...atDate(), rel: { rick: 6, sam: 2 } }).outcome, 'awkward');
   assert.equal(leaveDate({ ...atDate(), hunger: 9 }).outcome, 'hungry');
   assert.equal(leaveDate({ ...atDate(), hunger: 3 }).outcome, 'fine');
@@ -424,4 +428,129 @@ test('summary and counters survive flags that are not clues (allergy card, seats
   const s = sit(toBbq(buyItem(toPharmacy(extendedPanel(startDay(1))), 'card')), 'cedar');
   assert.doesNotThrow(() => daySummary(s));
   assert.equal(probablyFines(s), 0);
+});
+
+// ---------- Pass A/C: consequences carry into the evening ----------
+
+const atPizza = (s = newRun(1), server: State['server'] = 'friendly'): State => ({ ...toPizza(toBbq(s)), server });
+
+test('servers differ: careful checks straight away, busy rushes a partial check, dismissive makes insisting cost fun', () => {
+  const careful = askServer({ ...atDate(), server: 'careful' });
+  assert.equal(careful.known.includes('server_checked'), true);
+  assert.equal(careful.known.includes('server_guess'), false);
+
+  const busy = { ...atDate(), server: 'busy' as const };
+  const partial = askServer(busy);
+  assert.equal(partial.known.includes('server_partial'), true);
+  assert.equal(worstMark(partial, 'pasta'), '!'); // mains' peanut line is answered (dairy is still '!')
+  assert.equal(factLines(partial, 'pasta').find((l) => l.topic === 'Peanut')!.mark, '✓');
+  assert.equal(factLines(partial, 'torte').find((l) => l.topic === 'Peanut')!.mark, '?'); // nobody mentioned dessert
+  assert.equal(askServer(partial).known.includes('server_checked'), true);
+
+  const rude = { ...atDate(), server: 'dismissive' as const };
+  const guessed = askServer(rude);
+  assert.equal(askServer(guessed).satisfaction, guessed.satisfaction - 1);
+});
+
+test('patience: questioning the server costs Sam patience unless Sam knows why; at zero Sam leaves', () => {
+  const s = atDate();
+  assert.equal(askServer(s).patience, s.patience - 1);
+  assert.equal(askServer(tellSam(s)).patience, s.patience);
+  const gone = askServer({ ...s, patience: 1 });
+  assert.equal(gone.outcome, 'walked_out');
+});
+
+test('the day catches up at dinner: wiped out, Rick plate, Rick voicemails', () => {
+  const base = toBbq(newRun(1));
+  assert.equal(toDate({ ...base, conditionLoad: CONDITION_DANGER }).patience, 8);
+  assert.equal(toDate({ ...base, rel: { rick: 9, sam: 5 } }).hunger, toDate(base).hunger - 2);
+  assert.equal(toDate({ ...base, rel: { rick: 2, sam: 5 } }).patience, 9);
+});
+
+test('broke at dinner: Sam can cover it, food is free, and it costs trust and interest', () => {
+  const rich = atDate();
+  assert.equal(canAskSamToCover(rich), false);
+  const broke = { ...atDate(), money: 3 };
+  assert.equal(eat(broke, 'bruschetta'), broke); // can't pay
+  const c = samCovers(broke);
+  assert.equal(c.rel.sam, 4);
+  assert.equal(c.trust, 4);
+  const ate = eat(c, 'salmon');
+  assert.equal(ate.money, 3); // Sam paid
+  assert.equal(ate.rel.sam, 3); // ...and you ordered the priciest thing on Sam's dime
+  assert.equal(leaveDate({ ...c, hunger: 3, rel: { rick: 6, sam: 7 } }).outcome, 'cheap_charming');
+  assert.equal(leaveDate({ ...c, hunger: 3 }).outcome, 'unprepared');
+  assert.equal(canAskSamToCover({ ...atPizza(), money: 5 }), false); // $4 slices: you can still pay at the pizza place
+});
+
+test('trust: telling early helps, explaining helps more, gambling in front of someone who knows costs it', () => {
+  const s = atDate();
+  const told = tellSam(s);
+  assert.equal(told.trust, s.trust + 1);
+  assert.equal(samKnows(told), 1);
+  const knows = explainSam(told);
+  assert.equal(samKnows(knows), 2);
+  assert.equal(knows.trust, s.trust + 2);
+  assert.equal(eat(knows, 'bruschetta').trust, knows.trust - 2); // onion unknown: a gamble, and Sam knows the stakes
+  const blind = eat(s, 'torte');
+  assert.equal(blind.trust, s.trust - 3);
+  assert.equal(endingCopy(blind).title, 'IT HAPPENED (SAM HAD NO IDEA)');
+  assert.equal(endingCopy(eat(told, 'torte')).title, 'IT HAPPENED');
+});
+
+test('pizza: "no pesto on it" is not the same as safe; the clean cutter is', () => {
+  const s = atPizza();
+  const guess = askServer(s);
+  assert.equal(guess.known.includes('pizza_guess'), true);
+  assert.equal(factLines(guess, 'margherita').find((l) => l.topic === 'Peanut')!.mark, '?');
+  const checked = askServer(guess);
+  assert.equal(factLines(checked, 'margherita').find((l) => l.topic === 'Peanut')!.mark, '!');
+  assert.equal(worstMark(lookCutter(s), 'margherita'), '!');
+  assert.equal(freshCutter(s), s); // not offered until the kitchen admits the cutter
+  const pie = freshCutter(checked);
+  assert.equal(eat(pie, 'custom_pie').outcome, null); // safe for peanut; dairy is a separate question
+  assert.equal(eat(s, 'pesto').outcome, 'reaction');
+  let dirty = 0;
+  for (let seed = 1; seed < 60; seed++) if (eat({ ...atPizza(newRun(seed)), lactase: 3 }, 'margherita').outcome === 'reaction') dirty++;
+  assert.ok(dirty > 5 && dirty < 55); // the cutter is a real, seeded risk
+});
+
+test('telling Rick after declining the ribs repairs it', () => {
+  const b = toBbq(newRun(1));
+  const declined = declineRibs(b);
+  assert.equal(declined.rel.rick, b.rel.rick - 1);
+  assert.equal(tellRick(declined).rel.rick, b.rel.rick + 1);
+});
+
+test('day verdict, the biscuit call, and what next Saturday looks like', () => {
+  const plain = eat({ ...atBiscuit(), lactase: 3 }, 'plain_biscuit');
+  const d = daySummary(plain);
+  assert.equal(d.biscuit, 'You took the safe biscuit.');
+  const risked = eat({ ...atBiscuit(), lactase: 3 }, 'biscuit');
+  assert.match(daySummary(risked).biscuit, /risked it for the biscuit/);
+  const singed = daySummary({ ...atBiscuit(), rel: { rick: 2, sam: 5 }, relLog: [{ who: 'rick', d: -4, why: 'x' }] });
+  assert.equal(singed.verdict, 'SAFE, BUT BRIDGES SINGED');
+  assert.ok(singed.next.some((l) => l.includes('Rick')));
+});
+
+test('old saves are rejected', () => {
+  assert.equal(parseSave(JSON.stringify({ v: 1, state: newRun(1) })), null);
+});
+
+test('only peanut gambles count as luck, and only they cost Sam trust', () => {
+  const told = explainSam(tellSam(atPizza()));
+  const pie = eat(freshCutter(askServer(askServer(told))), 'custom_pie'); // dairy unknown, peanut answered
+  assert.equal(pie.peanutGambles, 0);
+  assert.equal(pie.trust, freshCutter(askServer(askServer(told))).trust);
+  const slice = eat(told, 'margherita'); // cutter never asked about
+  assert.equal(slice.peanutGambles, 1);
+});
+
+test('dinner previews use the same rule as dinner', () => {
+  const told = explainSam(tellSam(atDate()));
+  for (const id of ['bruschetta', 'pasta', 'salmon']) {
+    const p = preview(told, id);
+    const calm = { ...told, contaminated: { ...told.contaminated, [id]: false } };
+    assert.equal(p.base.trust, eat(calm, id).trust - told.trust, id);
+  }
 });

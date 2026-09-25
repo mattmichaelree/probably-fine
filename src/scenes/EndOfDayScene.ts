@@ -19,33 +19,36 @@ export class EndOfDayScene extends BaseScene {
     this.addPlayer(() => '"It was worth it."\n— Me, probably.');
     this.setFace(d.reactions ? 'sick' : d.score >= 70 ? 'happy' : 'neutral');
 
-    const W = 780, H = 640, x0 = 1280 - W - 30;
-    const card = this.U(this.add.container(x0, 40).setDepth(60));
+    const W = 900, H = 660, x0 = 1280 - W - 20;
+    const card = this.U(this.add.container(x0, 30).setDepth(60));
     card.add(this.add.graphics().fillStyle(0xfff8e6).lineStyle(6, INK).fillRoundedRect(0, 0, W, H, 26).strokeRoundedRect(0, 0, W, H, 26));
-    const title = d.reactions >= 2 ? 'YOU SURVIVED (BARELY)' : d.reactions === 1 ? 'YOU SURVIVED (MOSTLY)' : d.score >= 70 ? 'YOU SURVIVED (WITH STYLE)' : 'YOU SURVIVED';
-    card.add(this.txt(W / 2, 22, title, 44, { fontFamily: TITLE, color: d.reactions ? '#d9412f' : '#3f9a5b' }).setOrigin(0.5, 0));
-    card.add(this.txt(W / 2, 80, 'Saturday, in review', 18, { fontStyle: 'italic' }).setOrigin(0.5, 0));
+    // The verdict names the kind of Saturday it was; the grade is the number.
+    const good = d.verdict === 'A GOOD SATURDAY';
+    card.add(this.txt(40, 22, d.verdict, 40, { fontFamily: TITLE, color: d.reactions ? '#d9412f' : good ? '#3f9a5b' : '#e0662f', wordWrap: { width: W - 200 } }));
+    card.add(this.txt(40, 72, 'Saturday, in review', 18, { fontStyle: 'italic' }));
+    card.add(this.txt(W - 40, 14, 'SCORE', 16, { fontStyle: 'bold' }).setOrigin(1, 0));
+    const grade = this.txt(W - 40, 30, d.grade, 64, { fontFamily: TITLE, color: d.grade.startsWith('A') || d.grade.startsWith('B') ? '#3f9a5b' : '#d9412f' }).setOrigin(1, 0);
+    card.add(grade);
 
-    const people = d.people.map((p) => `${PEOPLE[p.who].short} ${p.rel}/10`).join(' · ') || 'Nobody. Peaceful.';
+    const sam = this.s.relLog.some((r) => r.who === 'sam') ? ` (trust ${this.s.trust}/10)` : '';
+    const people = d.people.map((p) => `${PEOPLE[p.who].short} ${p.rel}/10${p.who === 'sam' ? sam : ''}`).join(' · ') || 'Nobody. Peaceful.';
     const rows: [string, string][] = [
       ['Questionable foods eaten', `${d.gambles}`],
       ['Allergy reactions', `${d.reactions}`],
       ['Bathroom time', d.bathroom ? dur(d.bathroom).replace('+', '') : '0 min'],
       ['Money remaining', `$${d.money}`],
-      ['Times someone said "probably fine"', `${d.probablyFine}`],
-      ['Discovered today', d.discovered.join(', ') || 'Nothing new'],
+      ['"Probably fine" count', `${d.probablyFine}`],
       ['People', people],
+      ['The biscuit', d.biscuit],
+      ['Next Saturday', d.next.join(' ') || 'A clean slate.'],
     ];
-    let y = 122;
+    let y = 116;
     for (const [k, v] of rows) {
-      card.add(this.txt(40, y, k, 20));
-      const t = this.txt(440, y, v, 20, { fontStyle: 'bold', color: '#9a3b1e', wordWrap: { width: W - 470 } });
+      card.add(this.txt(40, y, k, 19));
+      const t = this.txt(300, y, v, 19, { fontStyle: 'bold', color: '#9a3b1e', wordWrap: { width: W - 340 } });
       card.add(t);
-      y += Math.max(34, t.height + 10);
+      y += Math.max(32, t.height + 8);
     }
-    card.add(this.txt(40, y + 10, 'Overall score', 26, { fontFamily: TITLE }));
-    const grade = this.txt(440, y - 4, d.grade, 64, { fontFamily: TITLE, color: d.grade.startsWith('A') || d.grade.startsWith('B') ? '#3f9a5b' : '#d9412f' });
-    card.add(grade);
     if (!reduceMotion) { grade.setScale(3).setAlpha(0); this.tweens.add({ targets: grade, scale: 1, alpha: 1, duration: 400, delay: 500, ease: 'Back.easeOut' }); }
 
     const note = this.txt(W - 40, H - 150, 'Same decisions\ntomorrow?\n☑ Yes\n☑ Also yes', 18,

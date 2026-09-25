@@ -5,14 +5,15 @@ import { DateScene } from './scenes/DateScene.ts';
 import { EndOfDayScene } from './scenes/EndOfDayScene.ts';
 import { GroceryScene } from './scenes/GroceryScene.ts';
 import { PharmacyScene } from './scenes/PharmacyScene.ts';
+import { PizzaScene } from './scenes/PizzaScene.ts';
 import { TestScene } from './scenes/TestScene.ts';
 import { TitleScene } from './scenes/TitleScene.ts';
 import { TruckScene } from './scenes/TruckScene.ts';
 
-// ?test, ?grocery, ?pharmacy, ?truck, ?bbq, ?date, ?biscuit or ?end jumps straight there with a fresh run. Otherwise: the title.
+// ?test, ?grocery, ?pharmacy, ?truck, ?bbq, ?date, ?pizza, ?biscuit or ?end jumps straight there with a fresh run. Otherwise: the title.
 const all = {
   title: TitleScene, test: TestScene, grocery: GroceryScene, pharmacy: PharmacyScene, truck: TruckScene,
-  bbq: BbqScene, date: DateScene, biscuit: BiscuitScene, end: EndOfDayScene,
+  bbq: BbqScene, date: DateScene, pizza: PizzaScene, biscuit: BiscuitScene, end: EndOfDayScene,
 };
 const jump = (Object.keys(all) as (keyof typeof all)[]).find((k) => location.search.includes(k));
 const scenes = jump ? [all[jump], ...Object.values(all).filter((S) => S !== all[jump])] : Object.values(all);

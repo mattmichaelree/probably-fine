@@ -1,7 +1,8 @@
 import * as Phaser from 'phaser';
-import { FOODS, PEOPLE, type Mark, type Person } from '../content/index.ts';
+import { CLUES, FOODS, PEOPLE, type Mark, type Person } from '../content/index.ts';
 import {
-  diff, endingCopy, parseSave, preview, probablyFines, serializeSave, TOPIC, TRIGGERS, worstMark, type Delta, type State,
+  CONDITION_DANGER, diff, endingCopy, foodFor, isEvening, parseSave, preview, probablyFines, samKnows, serializeSave, TOPIC, TRIGGERS, worstMark,
+  type Delta, type State,
 } from '../systems/rules.ts';
 import { sfx } from '../sfx.ts';
 
@@ -50,7 +51,33 @@ const ART = {
   // allergy test + food truck
   office_bg: 'locations/office_bg', doctor: 'characters/doctor', results: 'items/results',
   truck_bg: 'locations/truck_bg', cook: 'characters/cook', fryer: 'items/fryer', fries: 'food/fries', wrap: 'food/wrap',
+  // moods: swapped in place over the base sprite
+  rick_proud: 'characters/rick_proud', rick_hurt: 'characters/rick_hurt', rick_panicked: 'characters/rick_panicked', rick_sheepish: 'characters/rick_sheepish',
+  sam_happy: 'characters/sam_happy', sam_annoyed: 'characters/sam_annoyed', sam_worried: 'characters/sam_worried',
+  // servers (one per venue per run) + the pizza place
+  server_careful: 'characters/server_careful', server_friendly: 'characters/server_friendly', server_busy: 'characters/server_busy', server_dismissive: 'characters/server_dismissive',
+  pizza_bg: 'locations/pizza_bg', pizza_menu: 'items/pizza_menu', pizza_slices: 'food/pizza_slices', garlic_knots: 'food/garlic_knots',
+  custom_pie: 'food/custom_pie', pizza_cutter: 'items/pizza_cutter', pesto_tub: 'items/pesto_tub',
 };
+
+// Player notebook: discoveries survive across Saturdays; the Saturday itself does not.
+const NOTE_KEY = 'pf-notebook';
+export function loadNotebook(): string[] {
+  try {
+    const v: unknown = JSON.parse(localStorage.getItem(NOTE_KEY) ?? '[]');
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  } catch { return []; }
+}
+function recordDiscoveries(s: State) {
+  const seen = new Set(loadNotebook());
+  const before = seen.size;
+  for (const k of s.known) if (CLUES[k]) seen.add(k);
+  for (const t of TRIGGERS) if (s.status[t] === 'confirmed') seen.add(`status_${t}`);
+  if (seen.size !== before) try { localStorage.setItem(NOTE_KEY, JSON.stringify([...seen])); } catch { /* no storage: the notebook stays blank */ }
+}
+
+// A stat chip for choice panels: a readable bar plus the exact number.
+export interface Chip { label: string; text?: string; from?: number; to?: number; color?: number; bad?: boolean }
 
 export type Face = 'neutral' | 'suspicious' | 'happy' | 'sick';
 export type Who = 'player' | 'npc' | 'npc2' | 'pa';
@@ -104,7 +131,7 @@ export abstract class BaseScene extends Phaser.Scene {
     this.badges = {};
     this.stuck = new Set();
     this.bubbles = {};
-    this.card = this.pulse = this.portrait = this.closeUp = this.choiceFrom = undefined;
+    this.card = this.pulse = this.portrait = this.closeUp = this.choiceFrom = this.toastObj = undefined;
     this.zoomed = false;
     this.choiceLabel = 'THIS CHOICE';
   }
@@ -149,10 +176,12 @@ export abstract class BaseScene extends Phaser.Scene {
     return this.add.text(x, y, str, { fontFamily: BODY, fontSize: `${size}px`, color: '#2a1b12', resolution: 2, ...style });
   }
 
-  protected tag(x: number, y: number, label: string) {
+  // Name tags are tappable too: tapping the label does what tapping the thing does.
+  protected tag(x: number, y: number, label: string, onTap?: () => void) {
     const t = this.txt(0, 0, label, 17, { color: '#fff', fontStyle: 'bold' }).setOrigin(0.5);
     const g = this.add.graphics().fillStyle(INK, 0.85).fillRoundedRect(-t.width / 2 - 10, -15, t.width + 20, 30, 12);
-    this.lastTag = this.W(this.add.container(x, y, [g, t]).setDepth(30));
+    this.lastTag = this.W(this.add.container(x, y, [g, t]).setDepth(30).setSize(t.width + 20, 40));
+    if (onTap) this.lastTag.setInteractive({ useHandCursor: true }).on('pointerdown', onTap);
     return this.lastTag;
   }
 
@@ -160,6 +189,17 @@ export abstract class BaseScene extends Phaser.Scene {
     const [g, t] = tag.list as [Phaser.GameObjects.Graphics, Phaser.GameObjects.Text];
     t.setText(label);
     g.clear().fillStyle(INK, 0.85).fillRoundedRect(-t.width / 2 - 10, -15, t.width + 20, 30, 12);
+    tag.setSize(t.width + 20, 40);
+    if (tag.input) tag.input.hitArea.setSize(t.width + 20, 40);
+  }
+
+  // Swap an NPC into a mood for a moment (hurt, proud, panicked...). A mood set as the scene
+  // ends stays, so the ending card shows how they took it.
+  protected npcBase = '';
+  protected mood(key: string, ms = 2600) {
+    if (!this.npc || !this.textures.exists(key)) return;
+    this.npc.setTexture(key);
+    this.time.delayedCall(ms, () => { if (this.npc.texture.key === key && !this.s.outcome) this.npc.setTexture(this.npcBase); });
   }
 
   // World taps are ignored while zoomed into a close-up.
@@ -167,12 +207,13 @@ export abstract class BaseScene extends Phaser.Scene {
 
   protected prop(id: string, key: string, x: number, y: number, label: string, onClick: () => void, tagDy = 18) {
     const img = this.W(this.add.image(x, y, key).setOrigin(0.5, 1).setScale(0.5).setInteractive({ useHandCursor: true }));
-    img.on('pointerdown', () => this.worldTap(() => {
+    const tap = () => this.worldTap(() => {
       if (!reduceMotion && this.pulse?.img !== img) this.tweens.add({ targets: img, scaleX: 0.56, scaleY: 0.45, yoyo: true, duration: 90 });
       onClick();
       this.highlight(img);
-    }));
-    this.tag(x, y + tagDy, label);
+    });
+    img.on('pointerdown', tap);
+    this.tag(x, y + tagDy, label, tap);
     this.props[id] = img;
     return img;
   }
@@ -180,8 +221,9 @@ export abstract class BaseScene extends Phaser.Scene {
   // An invisible tap area over part of a prop (e.g. one side of the grill).
   protected spots: Record<string, Phaser.GameObjects.Zone> = {}; // by label, for automated playthroughs
   protected hotspot(x: number, y: number, w: number, h: number, label: string, onClick: () => void, tagY: number) {
-    this.spots[label] = this.W(this.add.zone(x, y, w, h).setInteractive({ useHandCursor: true })).on('pointerdown', () => this.worldTap(onClick));
-    return this.tag(x, tagY, label);
+    const tap = () => this.worldTap(onClick);
+    this.spots[label] = this.W(this.add.zone(x, y, w, h).setInteractive({ useHandCursor: true })).on('pointerdown', tap);
+    return this.tag(x, tagY, label, tap);
   }
 
   protected highlight(img: Phaser.GameObjects.Image) {
@@ -255,20 +297,30 @@ export abstract class BaseScene extends Phaser.Scene {
   // ---------- preview text ----------
 
   // Turn the rules' preview into card text: known costs up top, then each risk with its stakes.
-  protected previewText(id: string): { stats: string; lines: Line[] } {
+  protected previewText(id: string): { stats: Chip[]; lines: Line[] } {
     const s = this.s;
-    const f = FOODS[id];
+    const f = foodFor(s, id);
     const { base, risks } = preview(s, id);
-    const cost = `${f.price ? `$${f.price}` : 'Free'} · ${f.endsScene ? 'checkout ' : ''}${dur(base.minutes)}`;
-    const upTo = risks.some((r) => r.ifBad) ? 'up to ' : '';
-    const rel = this.relText(s, base.rel);
-    const stats = `${cost}\nHunger ${s.hunger} → ${s.hunger + base.hunger} · Fun ${s.satisfaction} → ${upTo}${s.satisfaction + base.fun}${rel ? ` · ${rel}` : ''}`;
+    const risky = risks.some((r) => r.ifBad);
+    const stats: Chip[] = [
+      { label: 'Cost', text: f.price ? `$${f.price}` : FOODS[id].price ? 'Sam pays' : 'Free' },
+      { label: 'Time', text: `${f.endsScene ? 'checkout ' : ''}${dur(base.minutes)}` },
+      ...this.deltaChips(s, base),
+    ];
+    if (risky) {
+      const worst = Math.max(...risks.map((r) => r.ifBad?.condition ?? 0));
+      const cond = stats.find((c) => c.label === 'Condition');
+      if (cond) { cond.text = `${cond.to} or up to ${s.conditionLoad + worst}`; cond.bad = true; }
+      else stats.push({ label: 'Condition', from: s.conditionLoad, to: s.conditionLoad, color: 0xd9412f, text: `+0, or +${worst} if bad`, bad: true });
+    }
     const stakes = (b: Delta) => [
       b.condition ? `condition +${b.condition}` : '',
       b.minutes - base.minutes > 0 ? `${dur(b.minutes - base.minutes)} lost` : '',
       b.fun < base.fun ? `fun only ${s.satisfaction + b.fun}` : '',
       b.hunger > base.hunger ? `hunger back to ${s.hunger + b.hunger}` : '',
       ...(Object.keys(b.rel) as Person[]).filter((p) => b.rel[p] < base.rel[p]).map((p) => `${PEOPLE[p].short} only ${s.rel[p] + b.rel[p]}`),
+      b.trust < base.trust ? `Sam's trust ${s.trust + b.trust}` : '',
+      b.patience < base.patience ? `Sam's patience ${s.patience + b.patience}` : '',
       b.endsOuting ? 'the outing is over' : '',
     ].filter(Boolean).join(', ');
     const lead: Record<string, string> = {
@@ -288,7 +340,57 @@ export abstract class BaseScene extends Phaser.Scene {
       d.minutes ? dur(d.minutes) : '', d.money ? `${d.money < 0 ? '−' : '+'}$${Math.abs(d.money)}` : '',
       d.fun ? `Fun ${this.s.satisfaction} → ${next.satisfaction}` : '', d.condition ? `Condition ${this.s.conditionLoad} → ${next.conditionLoad}` : '',
       this.relText(this.s, d.rel),
+      d.trust ? `Trust ${this.s.trust} → ${next.trust}` : '', d.patience ? `Patience ${this.s.patience} → ${next.patience}` : '',
     ].filter(Boolean).join(' · ');
+  }
+
+  // Chips for an action (a seat, a question): time and money first, then every meter it moves.
+  protected actionChips(next: State): Chip[] {
+    const d = diff(this.s, next);
+    return [
+      ...(d.money ? [{ label: 'Cost', text: `$${-d.money}` }] : []),
+      ...(d.minutes ? [{ label: 'Time', text: dur(d.minutes) }] : []),
+      ...this.deltaChips(this.s, d),
+    ];
+  }
+
+  // One chip per meter a change moves: hunger and fun always, the rest only when they move.
+  private deltaChips(s: State, d: Delta): Chip[] {
+    const chips: Chip[] = [
+      { label: 'Hunger', from: s.hunger, to: s.hunger + d.hunger, color: 0xf28b3d },
+      { label: 'Fun', from: s.satisfaction, to: s.satisfaction + d.fun, color: 0x4fc1b5 },
+    ];
+    if (d.condition) chips.push({ label: 'Condition', from: s.conditionLoad, to: s.conditionLoad + d.condition, color: 0xd9412f, bad: true });
+    for (const p of Object.keys(d.rel) as Person[]) if (d.rel[p]) chips.push({ label: PEOPLE[p].short, from: s.rel[p], to: s.rel[p] + d.rel[p], color: 0xe56b9f, bad: d.rel[p] < 0 });
+    if (d.trust) chips.push({ label: 'Sam trust', from: s.trust, to: s.trust + d.trust, color: 0x8a6fc0, bad: d.trust < 0 });
+    if (d.patience) chips.push({ label: 'Sam patience', from: s.patience, to: s.patience + d.patience, color: 0x4f9bd1, bad: true });
+    return chips;
+  }
+
+  // Lay chips out in rows inside `c`; returns the height used.
+  protected chipRow(c: Phaser.GameObjects.Container, x0: number, y0: number, maxW: number, chips: Chip[]): number {
+    let x = x0, y = y0, rowH = 0;
+    for (const ch of chips) {
+      const bar = ch.from !== undefined && ch.to !== undefined;
+      const d = bar ? ch.to! - ch.from! : 0;
+      const value = ch.text ?? `${ch.from}→${ch.to}${d ? ` (${d > 0 ? '+' : '−'}${Math.abs(d)})` : ''}`;
+      const lab = this.txt(0, 0, ch.label.toUpperCase(), 12, { fontStyle: 'bold', color: '#7a6a58' });
+      const val = this.txt(0, 0, value, 16, { fontStyle: 'bold', color: ch.bad ? '#b8321f' : '#1d4f7a' });
+      const w = Math.max(lab.width, val.width, bar ? 84 : 0) + 16;
+      const h = bar ? 54 : 44;
+      if (x > x0 && x + w > x0 + maxW) { x = x0; y += rowH + 6; rowH = 0; }
+      const g = this.add.graphics().fillStyle(0xf4ead2).lineStyle(2, INK).fillRoundedRect(x, y, w, h, 8).strokeRoundedRect(x, y, w, h, 8);
+      c.add([g, lab.setPosition(x + 8, y + 4), val.setPosition(x + 8, y + 19)]);
+      if (bar) {
+        const bw = w - 16, seg = (v: number) => (Math.max(0, Math.min(10, v)) / 10) * bw;
+        g.fillStyle(0xd8ccb0).fillRoundedRect(x + 8, y + 41, bw, 7, 3);
+        g.fillStyle(ch.color ?? 0x1d4f7a).fillRoundedRect(x + 8, y + 41, Math.max(2, seg(ch.to!)), 7, 3);
+        g.fillStyle(INK).fillRect(x + 8 + seg(ch.from!) - 1, y + 38, 2, 13); // where you are now
+      }
+      x += w + 6;
+      rowH = Math.max(rowH, h);
+    }
+    return chips.length ? y + rowH - y0 : 0;
   }
 
   // "Rick 6 → 7" for anyone whose relationship this changes.
@@ -315,25 +417,38 @@ export abstract class BaseScene extends Phaser.Scene {
     bar(320, 'Hunger', s.hunger, 0xf28b3d);
     bar(560, 'Fun', s.satisfaction, 0x4fc1b5);
     bar(800, 'Condition', s.conditionLoad, 0xd9412f);
+    // The danger line: past it, the day follows you to the next stop.
+    g.fillStyle(0xffffff).fillRect(895 + 2 + CONDITION_DANGER * 12 - 1, 13, 3, 32);
 
-    // Condition chips: mark char + color, never color alone.
+    // Status chips: mark char + color, never color alone.
     let x = 12;
-    const chip = (mark: '!' | '?', text: string) => {
+    const y = 80;
+    const chip = (mark: Mark, text: string) => {
       const t = this.txt(10, 0, `${mark}  ${text}`, 17, { color: '#fff', fontStyle: 'bold' }).setOrigin(0, 0.5);
       const w = t.width + 20;
-      this.hud.add(this.add.container(x, 80, [this.add.graphics().fillStyle(MARK_COLOR[mark]).lineStyle(3, INK)
+      this.hud.add(this.add.container(x, y, [this.add.graphics().fillStyle(MARK_COLOR[mark]).lineStyle(3, INK)
         .fillRoundedRect(0, -15, w, 30, 10).strokeRoundedRect(0, -15, w, 30, 10), t]));
       x += w + 8;
     };
-    chip('!', 'PEANUT: severe allergy');
-    for (const t of TRIGGERS) {
-      const st = s.status[t];
-      chip(st === 'confirmed' ? '!' : '?', `${TOPIC[t].toUpperCase()}: ${st === 'confirmed' ? 'intolerant' : st === 'suspected' ? 'suspected' : '???'}`);
+    const word = (t: (typeof TRIGGERS)[number]) => (s.status[t] === 'confirmed' ? 'intolerant' : s.status[t] === 'suspected' ? 'suspected' : '???');
+    if (isEvening(s)) {
+      // At dinner the social facts matter as much as the allergy ones.
+      chip('!', 'PEANUT');
+      for (const t of TRIGGERS) chip(s.status[t] === 'confirmed' ? '!' : '?', `${TOPIC[t].toUpperCase()}${s.status[t] === 'confirmed' ? ': no' : ' ?'}`);
+      x += 10;
+      const knows = samKnows(s);
+      chip((['?', '!', '✓'] as Mark[])[knows], `SAM ${["doesn't know", 'knows', 'gets it'][knows]}`);
+      chip(s.trust >= 6 ? '✓' : s.trust <= 3 ? '!' : '?', `TRUST ${s.trust}`);
+      chip(s.patience >= 6 ? '✓' : s.patience <= 3 ? '!' : '?', `PATIENCE ${s.patience}`);
+    } else {
+      chip('!', 'PEANUT: severe allergy');
+      for (const t of TRIGGERS) chip(s.status[t] === 'confirmed' ? '!' : '?', `${TOPIC[t].toUpperCase()}: ${word(t)}`);
+      chip('!', 'CEDAR POLLEN: seasonal');
     }
-    chip('!', 'CEDAR POLLEN: seasonal');
     const pocket = [
       s.lactase ? `Lactase x${s.lactase}` : '', s.antacid ? `Antacid x${s.antacid}` : '',
       s.known.includes('allergy_card') ? 'Allergy card' : '', s.minute < s.pillsUntil ? `Pills until ${clock(s.pillsUntil)}` : '',
+      isEvening(s) && s.known.includes('sam_covered') ? 'Sam is paying' : '',
     ].filter(Boolean).join(' · ');
     this.hud.add(this.txt(1268, 80, `Pocket: ${pocket || 'lint'}`, 18,
       { fontStyle: 'bold', backgroundColor: '#fff8e6', padding: { x: 10, y: 4 } }).setOrigin(1, 0.5));
@@ -350,11 +465,12 @@ export abstract class BaseScene extends Phaser.Scene {
       [950, next.conditionLoad - prev.conditionLoad, ' condition', '#ff7a66'],
       ...(Object.keys(PEOPLE) as Person[]).map((p) => [1150, next.rel[p] - prev.rel[p], ` ${PEOPLE[p].short}`, '#ffb3c7'] as [number, number, string, string]),
     ];
+    const y0 = 118;
     for (const [x, d, unit, color] of items) {
       if (!d) continue;
       const str = unit === '$' ? `${d > 0 ? '+' : '-'}$${Math.abs(d)}` : `${d > 0 ? '+' : ''}${d}${unit}`;
-      const t = this.U(this.txt(x, 118, str, 22, { fontFamily: TITLE, color, stroke: '#1d2a3a', strokeThickness: 6 }).setOrigin(0.5).setDepth(90));
-      this.tweens.add({ targets: t, y: 150, alpha: 0, delay: 900, duration: 900, onComplete: () => t.destroy() });
+      const t = this.U(this.txt(x, y0, str, 22, { fontFamily: TITLE, color, stroke: '#1d2a3a', strokeThickness: 6 }).setOrigin(0.5).setDepth(90));
+      this.tweens.add({ targets: t, y: y0 + 32, alpha: 0, delay: 900, duration: 900, onComplete: () => t.destroy() });
     }
   }
 
@@ -395,7 +511,24 @@ export abstract class BaseScene extends Phaser.Scene {
       if (!next.outcome) this.say('player', 'My stomach has filed\na formal complaint.', 3600);
     }
     this.onCommit(prev, next);
+    recordDiscoveries(next);
+    // Every consequence punches back right away: the newest line of the day, as a caption.
+    if (!next.outcome && next.log.length > prev.log.length) this.toast(next.log[next.log.length - 1]);
     if (next.outcome) this.time.delayedCall(endDelay, () => this.ending());
+  }
+
+  private toastObj?: Phaser.GameObjects.Container;
+  protected toast(str: string) {
+    if (this.zoomed) return; // the close-up panel already says it
+    this.toastObj?.destroy();
+    const t = this.txt(0, 0, str, 17, { color: '#fff', align: 'center', wordWrap: { width: 720 } }).setOrigin(0.5);
+    const w = t.width + 32, h = t.height + 18;
+    const c = this.U(this.add.container(640, 700 - h / 2, [
+      this.add.graphics().fillStyle(0x1d2a3a, 0.92).lineStyle(3, INK).fillRoundedRect(-w / 2, -h / 2, w, h, 14).strokeRoundedRect(-w / 2, -h / 2, w, h, 14), t,
+    ]).setDepth(78));
+    this.toastObj = c;
+    if (!reduceMotion) { c.setAlpha(0); this.tweens.add({ targets: c, alpha: 1, duration: 160 }); }
+    this.time.delayedCall(3400, () => { if (this.toastObj === c) { c.destroy(); this.toastObj = undefined; } });
   }
 
   // ---------- camera close-up ----------
@@ -447,9 +580,9 @@ export abstract class BaseScene extends Phaser.Scene {
     const panel = this.add.container(860, 110);
     const t1 = this.txt(18, 14, title, 24, { fontFamily: TITLE, wordWrap: { width: 370 } });
     const t2 = this.txt(18, t1.y + t1.height + 4, sub, 16, { fontStyle: 'italic', wordWrap: { width: 370 } });
-    const stats = this.txt(18, t2.y + t2.height + 8, pv.stats, 17, { fontStyle: 'bold', color: '#1d4f7a', wordWrap: { width: 370 } });
-    panel.add([t1, t2, stats]);
-    let y = stats.y + stats.height + 10;
+    panel.add([t1, t2]);
+    let y = t2.y + t2.height + 8;
+    y += this.chipRow(panel, 18, y, 370, pv.stats) + 10;
     for (const l of pv.lines) {
       panel.add(this.add.graphics().fillStyle(MARK_COLOR[l.mark]).lineStyle(3, INK).fillCircle(32, y + 13, 14).strokeCircle(32, y + 13, 14));
       panel.add(this.txt(32, y + 13, l.mark, 17, { color: '#fff', fontStyle: 'bold' }).setOrigin(0.5));
@@ -475,7 +608,7 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   // A small card beside the prop. The world stays visible and tappable. Up to 3 buttons per row.
-  protected openCard(propX: number, title: string, sub: string, lines: Line[], paper: string | null, buttons: Btn[], stats?: string) {
+  protected openCard(propX: number, title: string, sub: string, lines: Line[], paper: string | null, buttons: Btn[], stats?: Chip[]) {
     this.closeCard();
     const c = this.U(this.add.container(propX < 640 ? 660 : 20, 110).setDepth(82)); // above speech bubbles
     this.card = c;
@@ -485,11 +618,7 @@ export abstract class BaseScene extends Phaser.Scene {
     const st = this.txt(20, 52, sub, 16, { fontStyle: 'italic', wordWrap: { width: CARD_W - 110 } });
     c.add(st);
     let y = st.y + st.height + 10;
-    if (stats) {
-      const t = this.txt(20, y, stats, 18, { fontStyle: 'bold', color: '#1d4f7a', wordWrap: { width: CARD_W - 40 } });
-      c.add(t);
-      y += t.height + 10;
-    }
+    if (stats?.length) y += this.chipRow(c, 20, y, CARD_W - 40, stats) + 10;
     for (const l of lines) {
       c.add(this.add.graphics().fillStyle(MARK_COLOR[l.mark]).lineStyle(3, INK).fillCircle(34, y + 13, 14).strokeCircle(34, y + 13, 14));
       c.add(this.txt(34, y + 13, l.mark, 17, { color: '#fff', fontStyle: 'bold' }).setOrigin(0.5));
@@ -522,6 +651,7 @@ export abstract class BaseScene extends Phaser.Scene {
     const g = this.add.graphics().fillStyle(enabled ? b.fill : 0xb8bcc0).lineStyle(4, INK)
       .fillRoundedRect(-w / 2, -h / 2, w, h, 16).strokeRoundedRect(-w / 2, -h / 2, w, h, 16);
     const t = this.txt(0, 0, b.label, 19, { color: enabled ? '#fff' : '#5b6167', fontStyle: 'bold', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5);
+    for (let size = 18; t.height > h - 8 && size >= 14; size--) t.setFontSize(size); // long labels shrink to fit
     const c = this.add.container(x, y, [g, t]).setSize(w, h);
     if (enabled) c.setInteractive({ useHandCursor: true }).on('pointerdown', () => { sfx('tap'); b.onClick(); });
     return c;
@@ -535,7 +665,7 @@ export abstract class BaseScene extends Phaser.Scene {
     const copy = endingCopy(s);
     const bad = o === 'reaction' || o === 'stomach';
     // Jingle only for endings that were safe on purpose; luck gets a plain blip (stomach already buzzed on commit).
-    sfx(o === 'reaction' ? 'bad' : /^(safe_|honest_win|social_win|fine)/.test(o) ? 'good' : 'tap');
+    sfx(o === 'reaction' ? 'bad' : /^(safe_|honest_win|social_win|fine|cheap_charming)/.test(o) ? 'good' : 'tap');
     this.setFace(bad ? 'sick' : o === 'hungry' || o === 'rick_hurt' ? 'neutral' : 'happy');
     if (bad && !reduceMotion) { this.cameras.main.shake(450, 0.01); this.cameras.main.flash(250, 255, 120, 90); }
     Object.values(this.bubbles).forEach((b) => b?.destroy());
@@ -546,7 +676,7 @@ export abstract class BaseScene extends Phaser.Scene {
     const card = this.add.container(640, 360);
     m.add(card);
     card.add(this.add.graphics().fillStyle(0xfff8e6).lineStyle(6, INK).fillRoundedRect(-W / 2, -H / 2, W, H, 26).strokeRoundedRect(-W / 2, -H / 2, W, H, 26));
-    const color = bad ? '#d9412f' : o === 'got_away' || o === 'rick_hurt' ? '#e0662f' : o === 'hungry' ? '#7a5a2a' : '#3f9a5b';
+    const color = bad ? '#d9412f' : ['got_away', 'rick_hurt', 'walked_out', 'impatient', 'unprepared', 'awkward', 'charmed_unsure'].includes(o) ? '#e0662f' : o === 'hungry' ? '#7a5a2a' : '#3f9a5b';
     card.add(this.txt(0, -H / 2 + 20, copy.title, 54, { fontFamily: TITLE, color }).setOrigin(0.5, 0));
     card.add(this.txt(0, -H / 2 + 86, copy.sub, 21, { fontStyle: 'italic', align: 'center', wordWrap: { width: W - 80 } }).setOrigin(0.5, 0));
     if (o === 'stomach' || s.bathroomMinutes) card.add(this.add.image(W / 2 - 110, -H / 2 + 250, 'tp_roll').setScale(0.42).setAngle(8));
@@ -563,7 +693,7 @@ export abstract class BaseScene extends Phaser.Scene {
     let y = -H / 2 + 146;
     if (this.choiceFrom) {
       const a = this.choiceFrom;
-      const t = this.txt(-W / 2 + 50, y - 16, `${this.choiceLabel}: $${a.money}→$${s.money} · ${dur(s.minute - a.minute)} · Hunger ${a.hunger}→${s.hunger} · Fun ${a.satisfaction}→${s.satisfaction} · Condition ${a.conditionLoad}→${s.conditionLoad}`,
+      const t = this.txt(-W / 2 + 50, y - 16, `${this.choiceLabel}: $${a.money}→$${s.money} · ${dur(s.minute - a.minute)} · Hunger ${a.hunger}→${s.hunger} · Fun ${a.satisfaction}→${s.satisfaction} · Condition ${a.conditionLoad}→${s.conditionLoad}${isEvening(s) ? ` · Sam's trust ${a.trust}→${s.trust} · patience ${a.patience}→${s.patience}` : ''}`,
         17, { fontStyle: 'bold', color: '#1d4f7a', wordWrap: { width: W - 100 } });
       card.add(t);
       y += t.height + 2;
@@ -577,20 +707,22 @@ export abstract class BaseScene extends Phaser.Scene {
     for (const p of (Object.keys(PEOPLE) as Person[]).filter((q) => s.relLog.some((r) => r.who === q))) {
       const last = [...s.relLog].reverse().find((r) => r.who === p)!;
       card.add(this.txt(-W / 2 + 50, y, PEOPLE[p].name, 19));
-      card.add(this.txt(-W / 2 + 420, y, `${s.rel[p]}/10  (${last.d > 0 ? '+' : ''}${last.d}: ${last.why})`, 17, { fontStyle: 'bold', color: '#9a3b1e', wordWrap: { width: W - 470 } }));
-      y += 26;
+      const t = this.txt(-W / 2 + 420, y, `${s.rel[p]}/10  (${last.d > 0 ? '+' : ''}${last.d}: ${last.why})`, 17, { fontStyle: 'bold', color: '#9a3b1e', wordWrap: { width: W - 470 } });
+      card.add(t);
+      y += Math.max(26, t.height + 4);
     }
     y += 6;
     card.add(this.txt(-W / 2 + 50, y, 'WHY:', 22, { fontFamily: TITLE }));
     y += 30;
     for (const line of s.log.slice(-5)) {
       const t = this.txt(-W / 2 + 70, y, `• ${line}`, 16, { wordWrap: { width: W - 130 } });
+      if (y + t.height > H / 2 - 30 - BTN_H) { t.destroy(); break; } // never under the buttons
       card.add(t);
       y += t.height + 4;
     }
     card.add(this.txt(W / 2 - 24, H / 2 - 12, `Saturday #${s.seed}`, 13, { color: '#8a7a6a' }).setOrigin(1, 1));
     const btns = this.endButtons();
-    const bw = 300;
+    const bw = Math.min(300, (W - 60 - 16 * (btns.length - 1)) / btns.length);
     btns.forEach((b, i) => card.add(this.button((i - (btns.length - 1) / 2) * (bw + 16), H / 2 - 24 - BTN_H / 2, bw, BTN_H, b)));
 
     if (!reduceMotion) { card.setScale(0.6); this.tweens.add({ targets: card, scale: 1, duration: 260, ease: 'Back.easeOut', delay: bad ? 350 : 0 }); }

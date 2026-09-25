@@ -102,6 +102,8 @@ export const RICK = {
   push: "You gotta try the ribs. I'm not asking. I'm a little bit asking.",
   toldAfterSauce: 'Peanuts... and the sauce has... oh. OH. Okay. Nobody touch the ribs.',
   interrogated: 'Why is everybody interrogating my sauce?',
+  explained: 'Oh! THAT is why you passed on the ribs. Okay. Okay. I feel better. Foil burger?',
+  declinedTold: 'No ribs for you, got it. Nobody touch the ribs. Rick has it handled.',
   brush: 'Same brush for everything! Keeps the flavor consistent.',
   cedar: "Best seat in the house! That tree's been here since my dad.",
   cat: "He likes you! He's never moved for anyone.",

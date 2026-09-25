@@ -51,7 +51,7 @@ export class PharmacyScene extends BaseScene {
       },
     };
     this.openCard(this.props[id].x, it.name, id === 'card' ? 'Free. Takes 10 minutes to write neatly.' : `$${it.price}`, lines, null, [btn],
-      next !== s ? this.actionStats(next) : undefined);
+      next !== s ? this.actionChips(next) : undefined);
   }
 
   private exitCard() {
