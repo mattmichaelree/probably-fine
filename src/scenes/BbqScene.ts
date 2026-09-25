@@ -10,6 +10,7 @@ const SAUCE = { x: 925, y: 405, tapeX: 925, tapeY: 423 }; // bottle center and i
 
 export class BbqScene extends BaseScene {
   private entry!: State; // state on arrival, for "replay Rick's"
+  protected endPrompt = 'Sam texted: "Pasta place or pizza? You pick!"';
   private brush!: Phaser.GameObjects.Image;
   protected stickies = {
     ribs: { x: 400, y: 300, text: 'PB IN THE SAUCE\n(Rick: "not a nut")', angle: -6 },

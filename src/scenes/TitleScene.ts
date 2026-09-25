@@ -22,8 +22,9 @@ export class TitleScene extends BaseScene {
     if (!reduceMotion) this.tweens.add({ targets: glow, scale: 1.1, alpha: 0.45, yoyo: true, repeat: -1, duration: 1200, ease: 'Sine.easeInOut' });
     // Biscuit Barn is open: Jo is at the window, and the biscuit on the platter can be picked up.
     this.npc = this.W(this.add.image(950, 470, 'jo').setOrigin(0.5, 1).setScale(0.5).setDepth(-3));
-    const plate = this.W(this.add.image(1000, 700, 'hero_biscuit').setOrigin(0.5, 1).setScale(0.75).setInteractive({ useHandCursor: true }));
-    plate.on('pointerdown', () => this.worldTap(() => this.biscuitCloseUp()));
+    const plate = this.W(this.add.image(1000, 700, 'biscuit_platter').setOrigin(0.5, 1).setScale(0.75).setInteractive({ useHandCursor: true }));
+    const hero = this.coverBiscuit(plate);
+    plate.on('pointerdown', () => this.worldTap(() => hero.lift(() => this.biscuitCloseUp())));
     this.addPlayer(() => 'Would I risk it\nfor the biscuit?\n...Probably.');
     this.time.delayedCall(900, () => this.say('npc', "Evening, hon! Last batch of the night. Come look.", 3400));
 
@@ -50,7 +51,7 @@ export class TitleScene extends BaseScene {
   private menu: (Phaser.GameObjects.Text | Phaser.GameObjects.Container)[] = [];
   private biscuitCloseUp() {
     this.menu.forEach((o) => o.setVisible(false));
-    this.zoomIn(1000, 560, () => {
+    this.zoomIn(1000, 610, () => {
       this.say('player', 'It is practically\nsinging.', 2400);
       this.closeUpPanel('THE BISCUIT', 'Golden. Flaky. Backlit by what can only be divine intervention. By tonight, you might know what is in it:', 'biscuit', [
         { label: 'Earn it:\nNEW GAME', fill: 0x3f9a5b, onClick: () => { clearSave(); this.scene.start('test', { seed: Math.floor(Math.random() * 1e6) }); } },

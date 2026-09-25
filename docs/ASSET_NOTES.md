@@ -20,7 +20,7 @@ For each new art/audio asset, record: filename, creator/source, license or permi
 | `food/`: fries, wrap | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Food Truck |
 | `food/`: burger, casserole, corn, potato_salad, sauce_bottle, sauce_back | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | BBQ |
 | `food/`: torte | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Date |
-| `food/`: hero_biscuit, plain_biscuits | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Biscuit, Title |
+| `food/`: biscuit_platter, biscuit_cloche (the cover), biscuit_reveal, plain_biscuits | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Biscuit, Title |
 | `items/`: results | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Allergy test |
 | `items/`: tongs, lactase, tp_roll | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Grocery (tp_roll on any stomach ending) |
 | `items/`: pills_clear, pills_snooze, antacid, allergy_card | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Pharmacy |

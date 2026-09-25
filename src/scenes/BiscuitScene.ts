@@ -2,13 +2,14 @@ import { CLUES, FOODS, JO } from '../content/index.ts';
 import { askJo, canEat, eat, isRisky, leaveBiscuit, lookBoard, newRun, toBbq, toBiscuit, toDate, type State } from '../systems/rules.ts';
 import { BaseScene, reduceMotion, type Btn } from './BaseScene.ts';
 
-const HERO = { x: 470, y: 545 };
+const HERO = { x: 470, y: 590 }; // the biscuit itself, under the cover
 const BOARD = { x: 1080, y: 400, crumbX: 1112, crumbY: 398 };
 
 // The payoff: the most tempting food of the day, framed like a hero, with its one
 // real question sitting on a pastry board in plain sight.
 export class BiscuitScene extends BaseScene {
   private entry!: State;
+  private hero!: ReturnType<BiscuitScene['coverBiscuit']>;
   protected stickies = { board: { x: 1080, y: 330, text: 'PEANUT CRUMBS', angle: -5 } };
 
   constructor() { super('biscuit'); }
@@ -34,7 +35,8 @@ export class BiscuitScene extends BaseScene {
         this.tweens.add({ targets: sp, alpha: 1, angle: 90, yoyo: true, repeat: -1, duration: 700, delay: i * 230 });
       }
     }
-    this.prop('biscuit', 'hero_biscuit', HERO.x, 640, 'THE Biscuit  $6', () => this.biscuitCloseUp(), 18);
+    this.prop('biscuit', 'biscuit_platter', HERO.x, 640, 'THE Biscuit  $6', () => this.hero.lift(() => this.biscuitCloseUp()), 18);
+    this.hero = this.coverBiscuit(this.props.biscuit);
     this.hotspot(1160, 655, 220, 90, 'Go home →', () => this.exitCard(), 655);
 
     this.addPlayer(() => (this.s.reactions ? "Today has been a lot.\nBut that biscuit..." : 'That biscuit is\nlooking at me.'));
@@ -51,6 +53,7 @@ export class BiscuitScene extends BaseScene {
   protected onCommit(prev: State, next: State) {
     const learned = (id: string) => next.known.includes(id) && !prev.known.includes(id);
     if (learned('board_looked') || learned('jo_board')) this.stick('board');
+    if (next.eaten.includes('biscuit') && !prev.eaten.includes('biscuit')) this.hero.biscuit.setVisible(false); // eaten
   }
 
   // ---------- the biscuit close-up ----------

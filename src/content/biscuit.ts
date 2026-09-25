@@ -8,7 +8,7 @@ export const BISCUIT_FOODS: Record<string, Food> = {
   biscuit: {
     id: 'biscuit', name: 'THE Biscuit', price: 6, hunger: -3, satisfaction: 5, minutes: 5,
     doses: { dairy: 4 }, peanut: false, crossContact: 0.4, contactSource: 'the pastry board it shares with the peanut butter cookies',
-    endsScene: true, art: 'hero_biscuit',
+    endsScene: true, art: 'biscuit_reveal',
     blurb: 'Golden. Flaky. Backlit by what can only be divine intervention.',
     facts: [
       { topic: 'Peanut', clues: ['jo_board', 'board_looked'], unknown: 'Jo says it\'s "love and lard."', mark: '!', text: 'Rolled on the same board as the peanut butter cookies' },

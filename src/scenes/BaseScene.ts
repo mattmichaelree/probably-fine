@@ -46,7 +46,7 @@ const ART = {
   restaurant_bg: 'locations/restaurant_bg', specials_board: 'items/specials_board', sam: 'characters/sam', server: 'characters/server',
   date_table: 'items/date_table', candle: 'items/candle', torte: 'food/torte', taco_truck: 'items/taco_truck',
   // biscuit + end of day
-  biscuit_bg: 'locations/biscuit_bg', night_bg: 'locations/night_bg', jo: 'characters/jo', hero_biscuit: 'food/hero_biscuit',
+  biscuit_bg: 'locations/biscuit_bg', night_bg: 'locations/night_bg', jo: 'characters/jo', biscuit_platter: 'food/biscuit_platter', biscuit_cloche: 'food/biscuit_cloche', biscuit_reveal: 'food/biscuit_reveal',
   plain_biscuits: 'food/plain_biscuits', pastry_board: 'items/pastry_board',
   // allergy test + food truck
   office_bg: 'locations/office_bg', doctor: 'characters/doctor', results: 'items/results',
@@ -116,6 +116,7 @@ export abstract class BaseScene extends Phaser.Scene {
   protected lastTag!: Phaser.GameObjects.Container;
   protected startMinute = 0;
   protected choiceLabel = 'THIS CHOICE';
+  protected endPrompt = ''; // a line above the ending buttons, when the next step is a choice
   // Evidence notes that stay stuck to props once you learn something.
   protected abstract stickies: Record<string, { x: number; y: number; text: string; angle: number }>;
   // Scene-specific reactions after the shared commit work.
@@ -191,6 +192,22 @@ export abstract class BaseScene extends Phaser.Scene {
     g.clear().fillStyle(INK, 0.85).fillRoundedRect(-t.width / 2 - 10, -15, t.width + 20, 30, 12);
     tag.setSize(t.width + 20, 40);
     if (tag.input) tag.input.hitArea.setSize(t.width + 20, 40);
+  }
+
+  // The hero biscuit: the biscuit and its cover stacked on a platter image. The first look lifts the cover.
+  protected coverBiscuit(platter: Phaser.GameObjects.Image) {
+    const layer = (key: string, d: number) => this.W(this.add.image(platter.x, platter.y, key).setOrigin(0.5, 1).setScale(platter.scale).setDepth(platter.depth + d));
+    const biscuit = layer('biscuit_reveal', 1);
+    const cloche = layer('biscuit_cloche', 2);
+    const lift = (then: () => void) => {
+      if (!cloche.visible) return then();
+      sfx('good');
+      if (reduceMotion) { cloche.setVisible(false); return then(); }
+      this.tweens.add({ targets: cloche, y: cloche.y - 230 * cloche.scale, angle: -16, duration: 420, ease: 'Back.easeOut' });
+      this.tweens.add({ targets: cloche, alpha: 0, delay: 700, duration: 220, onComplete: () => cloche.setVisible(false) });
+      this.beat(760, then);
+    };
+    return { biscuit, cloche, lift };
   }
 
   // Swap an NPC into a mood for a moment (hurt, proud, panicked...). A mood set as the scene
@@ -716,13 +733,14 @@ export abstract class BaseScene extends Phaser.Scene {
     y += 30;
     for (const line of s.log.slice(-5)) {
       const t = this.txt(-W / 2 + 70, y, `• ${line}`, 16, { wordWrap: { width: W - 130 } });
-      if (y + t.height > H / 2 - 30 - BTN_H) { t.destroy(); break; } // never under the buttons
+      if (y + t.height > H / 2 - 30 - BTN_H - (this.endPrompt ? 28 : 0)) { t.destroy(); break; } // never under the buttons
       card.add(t);
       y += t.height + 4;
     }
     card.add(this.txt(W / 2 - 24, H / 2 - 12, `Saturday #${s.seed}`, 13, { color: '#8a7a6a' }).setOrigin(1, 1));
     const btns = this.endButtons();
     const bw = Math.min(300, (W - 60 - 16 * (btns.length - 1)) / btns.length);
+    if (this.endPrompt) card.add(this.txt(0, H / 2 - 30 - BTN_H, this.endPrompt, 20, { fontStyle: 'bold italic', color: '#1d4f7a' }).setOrigin(0.5, 1));
     btns.forEach((b, i) => card.add(this.button((i - (btns.length - 1) / 2) * (bw + 16), H / 2 - 24 - BTN_H / 2, bw, BTN_H, b)));
 
     if (!reduceMotion) { card.setScale(0.6); this.tweens.add({ targets: card, scale: 1, duration: 260, ease: 'Back.easeOut', delay: bad ? 350 : 0 }); }
