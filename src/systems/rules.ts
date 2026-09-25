@@ -74,7 +74,7 @@ export const toPharmacy = (s: State) => arrive(s, 'pharmacy', PHARMACY_ARRIVE, 0
 export const toBiscuit = (s: State) => arrive(s, 'biscuit', BISCUIT_ARRIVE, 1, 'Walked past Biscuit Barn on the way home. It was open. It is always open.');
 export const toDate = (s: State) => arrive(s, 'date', DATE_ARRIVE, 2, 'Went home, changed shirts twice, and met Sam at the restaurant.');
 
-// -> BBQ. The Food Truck is skipped until it exists.
+// -> BBQ. Eating at the truck means arriving less hungry.
 export function toBbq(s: State): State {
   const lunch = s.scene === 'truck' && s.eaten.length > 0;
   return note({
@@ -119,7 +119,8 @@ function tick(s: State, mins: number): State {
 
 const note = (s: State, line: string): State => ({ ...s, log: [...s.log, line] });
 
-export const probablyFines = (s: State) => s.known.filter((id) => CLUES[id].probablyFine).length;
+// `known` also holds plain flags (allergy_card, sat_cedar, ...) that have no clue entry.
+export const probablyFines = (s: State) => s.known.filter((id) => CLUES[id]?.probablyFine).length;
 export const checkoutMinutes = (s: State) => (s.minute >= LINE_GROWS_AT && s.scene === 'grocery' ? 12 : 2);
 
 // Learn a clue or set a flag: costs its time once, never changes what anything contains.
@@ -186,7 +187,10 @@ export function canEat(s: State, id: string) {
 export function eat(s: State, id: string): State {
   if (!canEat(s, id)) return s;
   const n = resolve(s, FOODS[id]);
-  return isRisky(s, id) ? { ...n, gambles: n.gambles + 1 } : n;
+  if (!isRisky(s, id)) return n;
+  // resolve's safe line says every fact was known; for a gamble that worked out, it wasn't.
+  const log = n.outcome?.startsWith('safe') ? [...n.log.slice(0, -1), `You ate the ${FOODS[id].name}. Not every fact was known. It worked out.`] : n.log;
+  return { ...n, gambles: n.gambles + 1, log };
 }
 
 // The one place eating is resolved. `preview` runs this same function on hypothetical
@@ -442,7 +446,7 @@ export function daySummary(s: State): DaySummary {
   const met = (Object.keys(s.rel) as Person[]).filter((p) => s.relLog.some((r) => r.who === p));
   const avgRel = met.length ? met.reduce((a, p) => a + s.rel[p], 0) / met.length : 5;
   const score = Math.round(Math.max(0, Math.min(100,
-    55 + (avgRel - 5) * 6 + s.satisfaction * 2 - s.hunger * 2 - s.conditionLoad * 2 - s.reactions * 12 + discovered.length * 3)));
+    60 + (avgRel - 5) * 6 + s.satisfaction * 2 - s.hunger * 2 - s.conditionLoad - s.reactions * 12 + discovered.length * 3 - (s.gambles === 0 && !met.length ? 10 : 0))));
   const letter = score >= 85 ? 'A' : score >= 70 ? 'B' : score >= 55 ? 'C' : score >= 40 ? 'D' : 'F';
   const mod = letter !== 'F' && score % 15 >= 10 ? '+' : letter !== 'F' && score % 15 < 4 ? '−' : '';
   return {

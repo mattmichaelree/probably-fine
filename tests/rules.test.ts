@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   askSauce, buyLactase, chatTodd, declineRibs, eat, endingCopy, factLines, inspect, leave, leaveBbq, negotiateCat, newRun, orderBurger,
   preview, probablyFines, sit, tellRick, toBbq, worstMark, toPharmacy, toDate, buyItem, pillsActive, tellSam, askServer,
-  lookTorte, moveVenue, passTorte, leaveDate, toBiscuit, askJo, daySummary, extendedPanel, toTruck, lookFryer, parseSave, serializeSave,
+  lookTorte, moveVenue, passTorte, leaveDate, toBiscuit, askJo, daySummary, extendedPanel, toTruck, lookFryer, parseSave, serializeSave, startDay,
 } from '../src/systems/rules.ts';
 
 // First seed where the cookie batch is (or isn't) contaminated.
@@ -378,6 +378,10 @@ test('the biscuit gamble: contamination is rolled per run, the plain biscuit is 
   assert.ok(dirty > 5 && dirty < 55);
   const plain = eat({ ...atBiscuit(), lactase: 3 }, 'plain_biscuit');
   assert.equal(plain.outcome, 'safe_smug');
+  // Dairy still unknown: it worked out, but the log must not claim every fact was known.
+  const lucky = eat({ ...atBiscuit(), lactase: 0 }, 'plain_biscuit');
+  assert.equal(lucky.gambles, 1);
+  assert.match(lucky.log.at(-1)!, /Not every fact was known/);
 });
 
 test('day summary counts gambles, reactions and discoveries; grade reflects the day', () => {
@@ -414,4 +418,10 @@ test('saves round-trip and reject bad data', () => {
   assert.equal(parseSave(null), null);
   assert.equal(parseSave('not json'), null);
   assert.equal(parseSave(JSON.stringify({ v: 99, state: s })), null);
+});
+
+test('summary and counters survive flags that are not clues (allergy card, seats, panel)', () => {
+  const s = sit(toBbq(buyItem(toPharmacy(extendedPanel(startDay(1))), 'card')), 'cedar');
+  assert.doesNotThrow(() => daySummary(s));
+  assert.equal(probablyFines(s), 0);
 });

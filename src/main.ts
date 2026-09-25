@@ -17,8 +17,8 @@ const all = {
 const jump = (Object.keys(all) as (keyof typeof all)[]).find((k) => location.search.includes(k));
 const scenes = jump ? [all[jump], ...Object.values(all).filter((S) => S !== all[jump])] : Object.values(all);
 
-const start = () =>
-  new Phaser.Game({
+const start = () => {
+  const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',
     width: 1280,
@@ -27,6 +27,9 @@ const start = () =>
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     scene: scenes,
   });
+  // Dev-only handle for automated playthroughs (tests press buttons by label). Stripped from production builds.
+  if (import.meta.env.DEV) (window as unknown as { pf: Phaser.Game }).pf = game;
+};
 
 // Canvas text needs web fonts loaded first; fall back to system fonts if offline.
 Promise.all([document.fonts.load('32px "Luckiest Guy"'), document.fonts.load('700 20px Fredoka')])

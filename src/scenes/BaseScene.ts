@@ -99,6 +99,7 @@ export abstract class BaseScene extends Phaser.Scene {
     if (save) try { localStorage.setItem(SAVE_KEY, serializeSave(s)); } catch { /* no storage: play on without saves */ }
     this.startMinute = s.minute;
     this.props = {};
+    this.spots = {};
     this.badges = {};
     this.stuck = new Set();
     this.bubbles = {};
@@ -174,8 +175,9 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   // An invisible tap area over part of a prop (e.g. one side of the grill).
+  protected spots: Record<string, Phaser.GameObjects.Zone> = {}; // by label, for automated playthroughs
   protected hotspot(x: number, y: number, w: number, h: number, label: string, onClick: () => void, tagY: number) {
-    this.W(this.add.zone(x, y, w, h).setInteractive({ useHandCursor: true })).on('pointerdown', () => this.worldTap(onClick));
+    this.spots[label] = this.W(this.add.zone(x, y, w, h).setInteractive({ useHandCursor: true })).on('pointerdown', () => this.worldTap(onClick));
     return this.tag(x, tagY, label);
   }
 
