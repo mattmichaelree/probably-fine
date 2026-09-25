@@ -36,7 +36,7 @@ export class PharmacyScene extends BaseScene {
       ? { name: 'Lact-Ease Tablets', price: LACTASE.price, helps: 'Absorbs a dairy dose, 3 uses.', not: 'Does nothing for peanuts, onions, or pollen.' }
       : ITEMS[id];
     const next = buyItem(s, id);
-    const lines: Line[] = [{ topic: 'Helps', mark: '✓', text: it.helps }, { topic: 'Does NOT', mark: '!', text: it.not }];
+    const lines: Line[] = [{ topic: 'Helps', mark: '✓', text: it.helps }, { topic: 'Heads up', mark: '!', text: it.not }];
     const already = id === 'lactase' ? s.lactase > 0 : id === 'antacid' ? s.antacid > 0 : id === 'card' ? s.known.includes('allergy_card') : s.minute < s.pillsUntil;
     const label = already ? (id === 'pills' || id === 'drowsy' ? `Already taken\n(until ${clock(s.pillsUntil)})` : 'Already have it')
       : s.money < it.price ? `Can't afford\n$${it.price}` : id === 'card' ? 'Write it' : id === 'pills' || id === 'drowsy' ? `Buy & take now\n$${it.price}` : `Buy it\n$${it.price}`;

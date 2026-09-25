@@ -3,6 +3,7 @@ import { FOODS, PEOPLE, type Mark, type Person } from '../content/index.ts';
 import {
   diff, endingCopy, parseSave, preview, probablyFines, serializeSave, TOPIC, TRIGGERS, worstMark, type Delta, type State,
 } from '../systems/rules.ts';
+import { sfx } from '../sfx.ts';
 
 export const TITLE = '"Luckiest Guy", "Arial Black", sans-serif';
 export const BODY = 'Fredoka, "Trebuchet MS", sans-serif';
@@ -143,6 +144,8 @@ export abstract class BaseScene extends Phaser.Scene {
   // ---------- world helpers ----------
 
   protected txt(x: number, y: number, str: string, size: number, style: Phaser.Types.GameObjects.Text.TextStyle = {}) {
+    // On a landscape phone the 720px stage shrinks to ~375px; bump small text so it stays readable.
+    if (size < 19 && this.scale.displaySize.height < 500) size = Math.round(size * 1.2);
     return this.add.text(x, y, str, { fontFamily: BODY, fontSize: `${size}px`, color: '#2a1b12', resolution: 2, ...style });
   }
 
@@ -160,7 +163,7 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   // World taps are ignored while zoomed into a close-up.
-  protected worldTap(fn: () => void) { if (!this.zoomed) fn(); }
+  protected worldTap(fn: () => void) { if (!this.zoomed) { sfx('tap'); fn(); } }
 
   protected prop(id: string, key: string, x: number, y: number, label: string, onClick: () => void, tagDy = 18) {
     const img = this.W(this.add.image(x, y, key).setOrigin(0.5, 1).setScale(0.5).setInteractive({ useHandCursor: true }));
@@ -387,6 +390,7 @@ export abstract class BaseScene extends Phaser.Scene {
     this.drawBadges();
     if (next.bathroomMinutes > prev.bathroomMinutes) {
       this.setFace('sick');
+      sfx('bad');
       if (!reduceMotion) this.cameras.main.shake(300, 0.006);
       if (!next.outcome) this.say('player', 'My stomach has filed\na formal complaint.', 3600);
     }
@@ -519,7 +523,7 @@ export abstract class BaseScene extends Phaser.Scene {
       .fillRoundedRect(-w / 2, -h / 2, w, h, 16).strokeRoundedRect(-w / 2, -h / 2, w, h, 16);
     const t = this.txt(0, 0, b.label, 19, { color: enabled ? '#fff' : '#5b6167', fontStyle: 'bold', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5);
     const c = this.add.container(x, y, [g, t]).setSize(w, h);
-    if (enabled) c.setInteractive({ useHandCursor: true }).on('pointerdown', () => b.onClick());
+    if (enabled) c.setInteractive({ useHandCursor: true }).on('pointerdown', () => { sfx('tap'); b.onClick(); });
     return c;
   }
 
@@ -530,6 +534,8 @@ export abstract class BaseScene extends Phaser.Scene {
     const o = s.outcome!;
     const copy = endingCopy(s);
     const bad = o === 'reaction' || o === 'stomach';
+    // Jingle only for endings that were safe on purpose; luck gets a plain blip (stomach already buzzed on commit).
+    sfx(o === 'reaction' ? 'bad' : /^(safe_|honest_win|social_win|fine)/.test(o) ? 'good' : 'tap');
     this.setFace(bad ? 'sick' : o === 'hungry' || o === 'rick_hurt' ? 'neutral' : 'happy');
     if (bad && !reduceMotion) { this.cameras.main.shake(450, 0.01); this.cameras.main.flash(250, 255, 120, 90); }
     Object.values(this.bubbles).forEach((b) => b?.destroy());

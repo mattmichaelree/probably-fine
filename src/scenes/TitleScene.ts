@@ -1,4 +1,5 @@
 import { startDay, type State } from '../systems/rules.ts';
+import { muted, setMuted } from '../sfx.ts';
 import { BaseScene, clearSave, loadSave, reduceMotion, setReduceMotion, TITLE, type Btn } from './BaseScene.ts';
 
 // The cover: title, a glowing biscuit, and the menu.
@@ -47,10 +48,11 @@ export class TitleScene extends BaseScene {
 
   private settings() {
     const btns: Btn[] = [
+      { label: `Sound: ${muted ? 'OFF' : 'ON'}`, fill: 0x3f9a5b, onClick: () => { setMuted(!muted); this.settings(); } },
       { label: `Reduced motion: ${reduceMotion ? 'ON' : 'OFF'}`, fill: 0x4f9bd1, onClick: () => { setReduceMotion(!reduceMotion); this.settings(); } },
       { label: 'Erase saved game', fill: 0xe0662f, enabled: !!this.save, onClick: () => { clearSave(); this.scene.restart(); } },
     ];
-    this.openCard(1000, 'Settings', 'Sound is coming later. Motion and saves live here.', [
+    this.openCard(1000, 'Settings', 'Sound, motion and saves.', [
       { mark: '✓', text: 'The game saves at the start of every stop. Continue picks up there.' },
     ], null, btns);
   }
