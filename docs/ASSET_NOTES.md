@@ -14,8 +14,22 @@ For each new art/audio asset, record: filename, creator/source, license or permi
 
 | File | Creator / source | License | Date | Used in |
 |---|---|---|---|---|
-| `public/assets/characters/*.svg` (player body, 4 faces, clerk) | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Grocery scene (temporary stand-in art) |
-| `public/assets/food/*.svg` (cookie box, bakery case, sample table, bread, rice cakes) | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Grocery scene (temporary) |
-| `public/assets/items/*.svg` (lactase, toilet paper) | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Grocery scene (temporary) |
-| `public/assets/locations/*.svg` (store background, checkout) | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Grocery scene (temporary) |
+| `characters/`: player_body, face_happy, face_neutral, face_sick, face_suspicious | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Player, every scene |
+| `characters/`: doctor, clerk, pharmacist, cook, rick, cat_chair, cat_chair_empty, sam, server, jo | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Test, Grocery, Pharmacy, Truck, BBQ, Date, Biscuit |
+| `food/`: cookie_box, cookie_back, bakery_case, sample_table, fancy_bread, rice_cakes | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Grocery |
+| `food/`: fries, wrap | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Food Truck |
+| `food/`: burger, casserole, corn, potato_salad, sauce_bottle, sauce_back | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | BBQ |
+| `food/`: torte | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Date |
+| `food/`: hero_biscuit, plain_biscuits | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Biscuit, Title |
+| `items/`: results | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Allergy test |
+| `items/`: tongs, lactase, tp_roll | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Grocery (tp_roll on any stomach ending) |
+| `items/`: pills_clear, pills_snooze, antacid, allergy_card | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Pharmacy |
+| `items/`: fryer | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Food Truck |
+| `items/`: grill, brush, lawn_chair | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | BBQ |
+| `items/`: date_table, candle, specials_board, taco_truck | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Date |
+| `items/`: pastry_board | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | Biscuit |
+| `locations/`: office_bg, store_bg, checkout, pharmacy_bg, truck_bg, backyard_bg, cedar_tree, restaurant_bg, biscuit_bg, night_bg | Claude Code, hand-written SVG | Original, project-owned | 2026-09-25 | One per scene; biscuit_bg also Title, night_bg End of Day |
+| Sound effects (`src/sfx.ts`) | Synthesized at runtime with WebAudio oscillators | Original, no audio files | 2026-09-25 | Taps, stomach/reaction, endings |
 | Fonts: Luckiest Guy, Fredoka | Google Fonts | SIL OFL 1.1 | 2026-09-25 | All UI text |
+
+All art is temporary stand-in art; the SVG generator scripts were one-off and are not kept in the repo.
