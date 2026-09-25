@@ -20,13 +20,18 @@ export class TitleScene extends BaseScene {
     this.W(this.add.rectangle(0, 0, 640, 720, 0x0e151e, 0.55).setOrigin(0).setDepth(-5));
     const glow = this.W(this.add.ellipse(1000, 600, 380, 300, 0xffe36b, 0.3).setDepth(-1));
     if (!reduceMotion) this.tweens.add({ targets: glow, scale: 1.1, alpha: 0.45, yoyo: true, repeat: -1, duration: 1200, ease: 'Sine.easeInOut' });
-    this.W(this.add.image(1000, 700, 'hero_biscuit').setOrigin(0.5, 1).setScale(0.75));
+    // Biscuit Barn is open: Jo is at the window, and the biscuit on the platter can be picked up.
+    this.npc = this.W(this.add.image(950, 470, 'jo').setOrigin(0.5, 1).setScale(0.5).setDepth(-3));
+    const plate = this.W(this.add.image(1000, 700, 'hero_biscuit').setOrigin(0.5, 1).setScale(0.75).setInteractive({ useHandCursor: true }));
+    plate.on('pointerdown', () => this.worldTap(() => this.biscuitCloseUp()));
     this.addPlayer(() => 'Would I risk it\nfor the biscuit?\n...Probably.');
+    this.time.delayedCall(900, () => this.say('npc', "Evening, hon! Last batch of the night. Come look.", 3400));
 
     const title = this.U(this.txt(420, 60, 'PROBABLY\nFINE', 104, { fontFamily: TITLE, color: '#ffd23f', stroke: '#2a1b12', strokeThickness: 14, align: 'center', lineSpacing: -18 }).setOrigin(0.5, 0));
     if (!reduceMotion) this.tweens.add({ targets: title, angle: 2, yoyo: true, repeat: -1, duration: 1800, ease: 'Sine.easeInOut' });
-    this.U(this.txt(420, 286, 'SATURDAY', 30, { fontFamily: TITLE, color: '#fff', letterSpacing: 8 }).setOrigin(0.5, 0));
-    this.U(this.txt(420, 326, 'Would you risk it for the biscuit?', 20, { color: '#ffe36b', fontStyle: 'italic' }).setOrigin(0.5, 0));
+    this.menu = [title];
+    this.menu.push(this.U(this.txt(420, 286, 'SATURDAY', 30, { fontFamily: TITLE, color: '#fff', letterSpacing: 8 }).setOrigin(0.5, 0)));
+    this.menu.push(this.U(this.txt(420, 326, 'Would you risk it for the biscuit?', 20, { color: '#ffe36b', fontStyle: 'italic' }).setOrigin(0.5, 0)));
 
     const btns: Btn[] = [
       { label: 'NEW GAME', fill: 0x3f9a5b, onClick: () => { clearSave(); this.scene.start('test', { seed: Math.floor(Math.random() * 1e6) }); } },
@@ -36,9 +41,22 @@ export class TitleScene extends BaseScene {
       { label: 'SETTINGS', fill: 0x7a8791, onClick: () => this.settings() },
     ];
     // Three full-width rows, then Notebook and Settings side by side: every button stays phone-tappable.
-    btns.slice(0, 3).forEach((b, i) => this.U(this.button(430, 410 + i * 80, 300, 72, b)));
-    btns.slice(3).forEach((b, i) => this.U(this.button(355 + i * 150, 650, 146, 72, b)));
+    btns.slice(0, 3).forEach((b, i) => this.menu.push(this.U(this.button(430, 410 + i * 80, 300, 72, b))));
+    btns.slice(3).forEach((b, i) => this.menu.push(this.U(this.button(355 + i * 150, 650, 146, 72, b))));
     this.U(this.txt(1268, 712, 'Stand-in art · Phaser 4 · made with Claude Code', 13, { color: '#c7ccd1' }).setOrigin(1, 1));
+  }
+
+  // Tap the platter: the same close-up the last stop uses, as a teaser of what you'll know by then.
+  private menu: (Phaser.GameObjects.Text | Phaser.GameObjects.Container)[] = [];
+  private biscuitCloseUp() {
+    this.menu.forEach((o) => o.setVisible(false));
+    this.zoomIn(1000, 560, () => {
+      this.say('player', 'It is practically\nsinging.', 2400);
+      this.closeUpPanel('THE BISCUIT', 'Golden. Flaky. Backlit by what can only be divine intervention. By tonight, you might know what is in it:', 'biscuit', [
+        { label: 'Earn it:\nNEW GAME', fill: 0x3f9a5b, onClick: () => { clearSave(); this.scene.start('test', { seed: Math.floor(Math.random() * 1e6) }); } },
+        { label: 'Put it down', fill: 0x7a8791, onClick: () => this.zoomOut(() => { this.menu.forEach((o) => o.setVisible(true)); this.setFace('neutral'); }) },
+      ]);
+    }, 2.2);
   }
 
   private howTo() {
