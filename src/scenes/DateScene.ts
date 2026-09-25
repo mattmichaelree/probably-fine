@@ -95,7 +95,8 @@ export class DateScene extends EveningScene {
     const risky = isRisky(s, 'torte');
     const btns: Btn[] = [];
     if (!known) btns.push({ label: 'Look closely\n+1 min', fill: 0x4f9bd1, onClick: () => this.lookClosely() });
-    btns.push({ label: `${risky ? 'RISK IT' : 'Share it'}\n$${FOODS.torte.price}`, fill: 0xe0662f, enabled: canEat(s, 'torte'), onClick: () => this.zoomOut(() => this.doEat('torte')) });
+    const price = s.known.includes('sam_covered') ? 'Sam pays' : `$${FOODS.torte.price}`;
+    btns.push({ label: `${risky ? 'RISK IT' : 'Share it'}\n${price}`, fill: 0xe0662f, enabled: canEat(s, 'torte'), onClick: () => this.zoomOut(() => this.doEat('torte')) });
     if (!s.known.includes('passed_torte')) btns.push({
       label: `Pass\n${this.actionStats(passDessert(s))}`, fill: 0x7a8791,
       onClick: () => this.zoomOut(() => { this.commit(passDessert(this.s)); this.say('npc', CLUES.passed_torte.line, 3000); }),
