@@ -1,0 +1,6 @@
+node_modules
+dist
+.playwright-mcp
+# Originals from the ChatGPT handoff; the images are copied into public/assets/concept/
+probably-fine-handoff.zip
+ChatGPT Image*.png

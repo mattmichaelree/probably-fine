@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Probably Fine: Saturday</title>
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Luckiest+Guy&display=swap" rel="stylesheet" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #1d2a3a; overflow: hidden; }
+    #game { width: 100vw; height: 100dvh; }
+    #rotate { display: none; }
+    @media (orientation: portrait) and (max-width: 700px) {
+      #rotate { display: block; position: fixed; top: 20%; left: 16px; right: 16px; color: #fff; text-align: center;
+        font: 700 22px Fredoka, sans-serif; line-height: 1.4; }
+    }
+  </style>
+</head>
+<body>
+  <div id="rotate">📱↻ Turn your phone sideways.<br>The grocery store is wider than your patience.</div>
+  <div id="game"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

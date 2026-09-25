@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="150" viewBox="0 0 60 150"><g stroke="#2a1b12" stroke-width="4" stroke-linejoin="round"><rect x="20" y="4" width="20" height="18" rx="3" fill="#fff"/>
+ <path d="M22 22 L22 44 C6 56 6 70 6 90 L6 140 C6 146 54 146 54 140 L54 90 C54 70 38 56 38 44 L38 22 Z" fill="#8a2a1c"/>
+ <rect x="7" y="72" width="46" height="46" fill="#efe0b8" stroke-width="2" transform="rotate(-6 30 95)"/></g>
+<g font-family="Comic Sans MS, Arial, sans-serif" font-size="5.2" fill="#2a1b12" transform="rotate(-6 30 95)">
+ <text x="10" y="82">RICK&#39;S SAUCE #3</text><text x="10" y="91">ketchup, br. sugar</text>
+ <text x="10" y="100" fill="#9a1f12" font-weight="bold">PB (chunky!!)</text><text x="10" y="109">love</text>
+</g></svg>

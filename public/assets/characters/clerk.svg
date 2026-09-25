@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="360" viewBox="0 0 220 360"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M25 360 C25 250 50 215 110 212 C170 215 195 250 195 360 Z" fill="#e8e1d2"/>
+ <path d="M60 225 L60 360 L160 360 L160 225 C140 240 80 240 60 225 Z" fill="#3f9a5b"/>
+ <rect x="118" y="262" width="34" height="18" rx="4" fill="#fff" stroke-width="3"/>
+ <rect x="94" y="180" width="32" height="36" fill="#f1c29b"/>
+ <ellipse cx="110" cy="130" rx="58" ry="66" fill="#f6cfa8"/>
+ <path d="M50 105 C55 50 165 50 170 105 Z" fill="#3f9a5b"/><path d="M160 102 L205 110 L165 118 Z" fill="#3f9a5b"/>
+ <path d="M52 108 C45 140 55 150 60 150 M168 108 C175 140 165 150 160 150" fill="#c8732b"/>
+ <ellipse cx="88" cy="132" rx="13" ry="12" fill="#fff"/><ellipse cx="132" cy="132" rx="13" ry="12" fill="#fff"/>
+ <path d="M75 128 L101 128 M119 128 L145 128" fill="none"/>
+ <circle cx="88" cy="136" r="4" fill="#2a1b12"/><circle cx="132" cy="136" r="4" fill="#2a1b12"/>
+ <path d="M96 170 L124 168" fill="none"/>
+ <circle cx="76" cy="155" r="3" fill="#d9826a" stroke="none"/><circle cx="146" cy="152" r="3" fill="#d9826a" stroke="none"/>
+</g>
+<text x="135" y="275" font-family="Arial Black, sans-serif" font-size="10" text-anchor="middle" fill="#2a1b12">TODD</text>
+</svg>

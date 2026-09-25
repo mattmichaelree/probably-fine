@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="150" viewBox="0 0 60 150"><g stroke="#2a1b12" stroke-width="4" stroke-linejoin="round"><rect x="20" y="4" width="20" height="18" rx="3" fill="#fff"/>
+ <path d="M22 22 L22 44 C6 56 6 70 6 90 L6 140 C6 146 54 146 54 140 L54 90 C54 70 38 56 38 44 L38 22 Z" fill="#8a2a1c"/>
+ <rect x="8" y="80" width="44" height="40" fill="#fff"/></g>
+<text x="30" y="104" font-family="Arial Black, sans-serif" font-size="8" text-anchor="middle" fill="#c94b3a">KETCHUP</text></svg>

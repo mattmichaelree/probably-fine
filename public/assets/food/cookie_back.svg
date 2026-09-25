@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="330" viewBox="0 0 240 330"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <rect x="10" y="250" width="220" height="74" rx="6" fill="#c94b3a"/>
+ <rect x="30" y="30" width="180" height="222" rx="8" fill="#ffd23f"/>
+ <rect x="42" y="44" width="156" height="120" rx="4" fill="#fff" stroke-width="3"/>
+ <rect x="42" y="172" width="156" height="56" rx="4" fill="#fff" stroke-width="3"/>
+</g>
+<g font-family="Arial, sans-serif" fill="#2a1b12">
+ <text x="50" y="62" font-size="12" font-weight="bold">Nutrition Facts</text>
+ <text x="50" y="80" font-size="9">Serving size: 1 cookie (probably)</text>
+ <text x="50" y="96" font-size="9">Calories ............ yes</text>
+ <text x="50" y="112" font-size="9">Joy ................. 110%</text>
+ <text x="50" y="128" font-size="9">Regret .............. varies</text>
+ <text x="50" y="150" font-size="7">*% Daily Value is a vibe.</text>
+ <text x="50" y="188" font-size="8" font-weight="bold">INGREDIENTS: wheat flour, sugar,</text>
+ <text x="50" y="200" font-size="8" font-weight="bold">butter (milk), vanilla, love.</text>
+ <text x="50" y="222" font-size="3.2" fill="#9a1f12">MAY CONTAIN PEANUTS. Made on shared equipment.</text>
+</g>
+<text x="120" y="296" font-family="Arial Black, sans-serif" font-size="20" text-anchor="middle" fill="#fff">$4 !!</text>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="200" viewBox="0 0 180 200"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M20 40 L20 150 C20 185 160 185 160 150 L160 40 Z" fill="#fff"/>
+ <ellipse cx="90" cy="40" rx="70" ry="28" fill="#fff"/><ellipse cx="90" cy="40" rx="22" ry="9" fill="#c7b89c"/>
+</g>
+<text x="90" y="95" font-family="Arial Black, Impact, sans-serif" font-size="14" text-anchor="middle" fill="#2a1b12">STILL</text>
+<text x="90" y="115" font-family="Arial Black, Impact, sans-serif" font-size="14" text-anchor="middle" fill="#2a1b12">PROBABLY</text>
+<text x="90" y="135" font-family="Arial Black, Impact, sans-serif" font-size="14" text-anchor="middle" fill="#2a1b12">FINE THOUGH.</text>
+</svg>

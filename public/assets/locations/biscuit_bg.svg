@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#1a2240"/><circle cx="0" cy="20" r="1" fill="#fff8d6"/><circle cx="97" cy="73" r="2" fill="#fff8d6"/><circle cx="194" cy="126" r="3" fill="#fff8d6"/><circle cx="291" cy="179" r="1" fill="#fff8d6"/><circle cx="388" cy="32" r="2" fill="#fff8d6"/><circle cx="485" cy="85" r="3" fill="#fff8d6"/><circle cx="582" cy="138" r="1" fill="#fff8d6"/><circle cx="679" cy="191" r="2" fill="#fff8d6"/><circle cx="776" cy="44" r="3" fill="#fff8d6"/><circle cx="873" cy="97" r="1" fill="#fff8d6"/><circle cx="970" cy="150" r="2" fill="#fff8d6"/><circle cx="1067" cy="203" r="3" fill="#fff8d6"/><circle cx="1164" cy="56" r="1" fill="#fff8d6"/><circle cx="1261" cy="109" r="2" fill="#fff8d6"/><circle cx="78" cy="162" r="3" fill="#fff8d6"/><circle cx="175" cy="215" r="1" fill="#fff8d6"/><circle cx="272" cy="68" r="2" fill="#fff8d6"/><circle cx="369" cy="121" r="3" fill="#fff8d6"/><circle cx="466" cy="174" r="1" fill="#fff8d6"/><circle cx="563" cy="27" r="2" fill="#fff8d6"/><circle cx="660" cy="80" r="3" fill="#fff8d6"/><circle cx="757" cy="133" r="1" fill="#fff8d6"/><circle cx="854" cy="186" r="2" fill="#fff8d6"/><circle cx="951" cy="39" r="3" fill="#fff8d6"/><circle cx="1048" cy="92" r="1" fill="#fff8d6"/><circle cx="1145" cy="145" r="2" fill="#fff8d6"/><circle cx="1242" cy="198" r="3" fill="#fff8d6"/><circle cx="59" cy="51" r="1" fill="#fff8d6"/>
+<circle cx="1180" cy="90" r="40" fill="#fff4c2"/>
+<rect y="520" width="1280" height="200" fill="#3a3f4a"/><line x1="0" y1="600" x2="1280" y2="600" stroke="#ffe36b" stroke-width="6" stroke-dasharray="40 30"/>
+<g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"><rect x="640" y="150" width="600" height="380" fill="#8a4a2a"/>
+<path d="M620 150 L940 70 L1260 150 Z" fill="#c94b3a"/>
+<rect x="700" y="230" width="480" height="210" rx="8" fill="#ffd98a"/>
+<rect x="680" y="440" width="520" height="30" rx="6" fill="#e6b877"/>
+<rect x="760" y="92" width="360" height="56" rx="10" fill="#fff4d6"/></g>
+<text x="940" y="130" font-family="Arial Black, Impact, sans-serif" font-size="28" text-anchor="middle" fill="#c94b3a">BISCUIT BARN</text>
+<text x="940" y="505" font-family="Arial Black, Impact, sans-serif" font-size="20" text-anchor="middle" fill="#fff4d6">OPEN LATE · ALWAYS</text>
+<g stroke="#2a1b12" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><line x1="200" y1="520" x2="200" y2="160"/><path d="M200 160 L260 160" fill="none"/></g>
+<ellipse cx="260" cy="170" rx="26" ry="12" fill="#ffe36b"/></svg>

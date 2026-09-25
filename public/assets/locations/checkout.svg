@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <rect x="10" y="40" width="280" height="155" rx="6" fill="#3f9a5b"/>
+ <rect x="4" y="28" width="292" height="24" rx="4" fill="#2f3a44"/>
+ <rect x="190" y="3" width="80" height="30" rx="4" fill="#c7ccd1"/>
+ <rect x="200" y="8" width="46" height="14" fill="#7bbf5a"/>
+</g>
+<text x="150" y="130" font-family="Arial Black, Impact, sans-serif" font-size="26" text-anchor="middle" fill="#fff">CHECKOUT</text>
+</svg>

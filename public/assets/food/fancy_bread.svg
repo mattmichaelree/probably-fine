@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="190" viewBox="0 0 150 190"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M20 40 C20 10 130 10 130 40 L135 180 L15 180 Z" fill="#e8f4ec"/>
+ <path d="M50 20 L60 5 L75 18 L90 5 L100 20" fill="none"/>
+ <rect x="30" y="70" width="90" height="70" rx="30" fill="#e6b877"/>
+ <rect x="22" y="148" width="106" height="24" rx="4" fill="#3f9a5b"/>
+</g>
+<text x="75" y="55" font-family="Arial Black, Impact, sans-serif" font-size="13" text-anchor="middle" fill="#3f9a5b">ARTISAN</text>
+<text x="75" y="165" font-family="Arial Black, Impact, sans-serif" font-size="10" text-anchor="middle" fill="#fff">PEANUT-FREE</text>
+<text x="75" y="112" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#2a1b12">$9</text>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="220" viewBox="0 0 200 220"><g stroke="#2a1b12" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M40 130 L30 215 M160 130 L170 215" fill="none"/>
+ <rect x="15" y="118" width="170" height="24" rx="6" fill="#e05a47"/>
+ <ellipse cx="100" cy="118" rx="70" ry="10" fill="#c7ccd1"/>
+ <path d="M45 92 L48 118 L62 118 L65 92 Z" fill="#fff" stroke-width="3"/><ellipse cx="55" cy="92" rx="10" ry="4" fill="#f7e7d0" stroke-width="3"/><path d="M75 92 L78 118 L92 118 L95 92 Z" fill="#fff" stroke-width="3"/><ellipse cx="85" cy="92" rx="10" ry="4" fill="#f7e7d0" stroke-width="3"/><path d="M105 92 L108 118 L122 118 L125 92 Z" fill="#fff" stroke-width="3"/><ellipse cx="115" cy="92" rx="10" ry="4" fill="#f7e7d0" stroke-width="3"/><path d="M135 92 L138 118 L152 118 L155 92 Z" fill="#fff" stroke-width="3"/><ellipse cx="145" cy="92" rx="10" ry="4" fill="#f7e7d0" stroke-width="3"/>
+ <rect x="40" y="10" width="120" height="60" rx="8" fill="#fff4d6"/>
+ <path d="M100 70 L100 90" fill="none"/>
+</g>
+<text x="100" y="37" font-family="Arial Black, Impact, sans-serif" font-size="18" text-anchor="middle" fill="#e0475f">FREE</text>
+<text x="100" y="58" font-family="Arial Black, Impact, sans-serif" font-size="14" text-anchor="middle" fill="#2a1b12">SAMPLE!</text>
+</svg>
